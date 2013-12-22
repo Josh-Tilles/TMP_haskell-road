@@ -1,0 +1,711 @@
+\documentclass{article}
+%% ODER: format ==         = "\mathrel{==}"
+%% ODER: format /=         = "\neq "
+%
+%
+\makeatletter
+\@ifundefined{lhs2tex.lhs2tex.sty.read}%
+  {\@namedef{lhs2tex.lhs2tex.sty.read}{}%
+   \newcommand\SkipToFmtEnd{}%
+   \newcommand\EndFmtInput{}%
+   \long\def\SkipToFmtEnd#1\EndFmtInput{}%
+  }\SkipToFmtEnd
+
+\newcommand\ReadOnlyOnce[1]{\@ifundefined{#1}{\@namedef{#1}{}}\SkipToFmtEnd}
+\usepackage{amstext}
+\usepackage{amssymb}
+\usepackage{stmaryrd}
+\DeclareFontFamily{OT1}{cmtex}{}
+\DeclareFontShape{OT1}{cmtex}{m}{n}
+  {<5><6><7><8>cmtex8
+   <9>cmtex9
+   <10><10.95><12><14.4><17.28><20.74><24.88>cmtex10}{}
+\DeclareFontShape{OT1}{cmtex}{m}{it}
+  {<-> ssub * cmtt/m/it}{}
+\newcommand{\texfamily}{\fontfamily{cmtex}\selectfont}
+\DeclareFontShape{OT1}{cmtt}{bx}{n}
+  {<5><6><7><8>cmtt8
+   <9>cmbtt9
+   <10><10.95><12><14.4><17.28><20.74><24.88>cmbtt10}{}
+\DeclareFontShape{OT1}{cmtex}{bx}{n}
+  {<-> ssub * cmtt/bx/n}{}
+\newcommand{\tex}[1]{\text{\texfamily#1}}	% NEU
+
+\newcommand{\Sp}{\hskip.33334em\relax}
+
+
+\newcommand{\Conid}[1]{\mathit{#1}}
+\newcommand{\Varid}[1]{\mathit{#1}}
+\newcommand{\anonymous}{\kern0.06em \vbox{\hrule\@width.5em}}
+\newcommand{\plus}{\mathbin{+\!\!\!+}}
+\newcommand{\bind}{\mathbin{>\!\!\!>\mkern-6.7mu=}}
+\newcommand{\rbind}{\mathbin{=\mkern-6.7mu<\!\!\!<}}% suggested by Neil Mitchell
+\newcommand{\sequ}{\mathbin{>\!\!\!>}}
+\renewcommand{\leq}{\leqslant}
+\renewcommand{\geq}{\geqslant}
+\usepackage{polytable}
+
+%mathindent has to be defined
+\@ifundefined{mathindent}%
+  {\newdimen\mathindent\mathindent\leftmargini}%
+  {}%
+
+\def\resethooks{%
+  \global\let\SaveRestoreHook\empty
+  \global\let\ColumnHook\empty}
+\newcommand*{\savecolumns}[1][default]%
+  {\g@addto@macro\SaveRestoreHook{\savecolumns[#1]}}
+\newcommand*{\restorecolumns}[1][default]%
+  {\g@addto@macro\SaveRestoreHook{\restorecolumns[#1]}}
+\newcommand*{\aligncolumn}[2]%
+  {\g@addto@macro\ColumnHook{\column{#1}{#2}}}
+
+\resethooks
+
+\newcommand{\onelinecommentchars}{\quad-{}- }
+\newcommand{\commentbeginchars}{\enskip\{-}
+\newcommand{\commentendchars}{-\}\enskip}
+
+\newcommand{\visiblecomments}{%
+  \let\onelinecomment=\onelinecommentchars
+  \let\commentbegin=\commentbeginchars
+  \let\commentend=\commentendchars}
+
+\newcommand{\invisiblecomments}{%
+  \let\onelinecomment=\empty
+  \let\commentbegin=\empty
+  \let\commentend=\empty}
+
+\visiblecomments
+
+\newlength{\blanklineskip}
+\setlength{\blanklineskip}{0.66084ex}
+
+\newcommand{\hsindent}[1]{\quad}% default is fixed indentation
+\let\hspre\empty
+\let\hspost\empty
+\newcommand{\NB}{\textbf{NB}}
+\newcommand{\Todo}[1]{$\langle$\textbf{To do:}~#1$\rangle$}
+
+\EndFmtInput
+\makeatother
+%
+%
+%
+%
+%
+%
+% This package provides two environments suitable to take the place
+% of hscode, called "plainhscode" and "arrayhscode". 
+%
+% The plain environment surrounds each code block by vertical space,
+% and it uses \abovedisplayskip and \belowdisplayskip to get spacing
+% similar to formulas. Note that if these dimensions are changed,
+% the spacing around displayed math formulas changes as well.
+% All code is indented using \leftskip.
+%
+% Changed 19.08.2004 to reflect changes in colorcode. Should work with
+% CodeGroup.sty.
+%
+\ReadOnlyOnce{polycode.fmt}%
+\makeatletter
+
+\newcommand{\hsnewpar}[1]%
+  {{\parskip=0pt\parindent=0pt\par\vskip #1\noindent}}
+
+% can be used, for instance, to redefine the code size, by setting the
+% command to \small or something alike
+\newcommand{\hscodestyle}{}
+
+% The command \sethscode can be used to switch the code formatting
+% behaviour by mapping the hscode environment in the subst directive
+% to a new LaTeX environment.
+
+\newcommand{\sethscode}[1]%
+  {\expandafter\let\expandafter\hscode\csname #1\endcsname
+   \expandafter\let\expandafter\endhscode\csname end#1\endcsname}
+
+% "compatibility" mode restores the non-polycode.fmt layout.
+
+\newenvironment{compathscode}%
+  {\par\noindent
+   \advance\leftskip\mathindent
+   \hscodestyle
+   \let\\=\@normalcr
+   \let\hspre\(\let\hspost\)%
+   \pboxed}%
+  {\endpboxed\)%
+   \par\noindent
+   \ignorespacesafterend}
+
+\newcommand{\compaths}{\sethscode{compathscode}}
+
+% "plain" mode is the proposed default.
+% It should now work with \centering.
+% This required some changes. The old version
+% is still available for reference as oldplainhscode.
+
+\newenvironment{plainhscode}%
+  {\hsnewpar\abovedisplayskip
+   \advance\leftskip\mathindent
+   \hscodestyle
+   \let\hspre\(\let\hspost\)%
+   \pboxed}%
+  {\endpboxed%
+   \hsnewpar\belowdisplayskip
+   \ignorespacesafterend}
+
+\newenvironment{oldplainhscode}%
+  {\hsnewpar\abovedisplayskip
+   \advance\leftskip\mathindent
+   \hscodestyle
+   \let\\=\@normalcr
+   \(\pboxed}%
+  {\endpboxed\)%
+   \hsnewpar\belowdisplayskip
+   \ignorespacesafterend}
+
+% Here, we make plainhscode the default environment.
+
+\newcommand{\plainhs}{\sethscode{plainhscode}}
+\newcommand{\oldplainhs}{\sethscode{oldplainhscode}}
+\plainhs
+
+% The arrayhscode is like plain, but makes use of polytable's
+% parray environment which disallows page breaks in code blocks.
+
+\newenvironment{arrayhscode}%
+  {\hsnewpar\abovedisplayskip
+   \advance\leftskip\mathindent
+   \hscodestyle
+   \let\\=\@normalcr
+   \(\parray}%
+  {\endparray\)%
+   \hsnewpar\belowdisplayskip
+   \ignorespacesafterend}
+
+\newcommand{\arrayhs}{\sethscode{arrayhscode}}
+
+% The mathhscode environment also makes use of polytable's parray 
+% environment. It is supposed to be used only inside math mode 
+% (I used it to typeset the type rules in my thesis).
+
+\newenvironment{mathhscode}%
+  {\parray}{\endparray}
+
+\newcommand{\mathhs}{\sethscode{mathhscode}}
+
+% texths is similar to mathhs, but works in text mode.
+
+\newenvironment{texthscode}%
+  {\(\parray}{\endparray\)}
+
+\newcommand{\texths}{\sethscode{texthscode}}
+
+% The framed environment places code in a framed box.
+
+\def\codeframewidth{\arrayrulewidth}
+\RequirePackage{calc}
+
+\newenvironment{framedhscode}%
+  {\parskip=\abovedisplayskip\par\noindent
+   \hscodestyle
+   \arrayrulewidth=\codeframewidth
+   \tabular{@{}|p{\linewidth-2\arraycolsep-2\arrayrulewidth-2pt}|@{}}%
+   \hline\framedhslinecorrect\\{-1.5ex}%
+   \let\endoflinesave=\\
+   \let\\=\@normalcr
+   \(\pboxed}%
+  {\endpboxed\)%
+   \framedhslinecorrect\endoflinesave{.5ex}\hline
+   \endtabular
+   \parskip=\belowdisplayskip\par\noindent
+   \ignorespacesafterend}
+
+\newcommand{\framedhslinecorrect}[2]%
+  {#1[#2]}
+
+\newcommand{\framedhs}{\sethscode{framedhscode}}
+
+% The inlinehscode environment is an experimental environment
+% that can be used to typeset displayed code inline.
+
+\newenvironment{inlinehscode}%
+  {\(\def\column##1##2{}%
+   \let\>\undefined\let\<\undefined\let\\\undefined
+   \newcommand\>[1][]{}\newcommand\<[1][]{}\newcommand\\[1][]{}%
+   \def\fromto##1##2##3{##3}%
+   \def\nextline{}}{\) }%
+
+\newcommand{\inlinehs}{\sethscode{inlinehscode}}
+
+% The joincode environment is a separate environment that
+% can be used to surround and thereby connect multiple code
+% blocks.
+
+\newenvironment{joincode}%
+  {\let\orighscode=\hscode
+   \let\origendhscode=\endhscode
+   \def\endhscode{\def\hscode{\endgroup\def\@currenvir{hscode}\\}\begingroup}
+   %\let\SaveRestoreHook=\empty
+   %\let\ColumnHook=\empty
+   %\let\resethooks=\empty
+   \orighscode\def\hscode{\endgroup\def\@currenvir{hscode}}}%
+  {\origendhscode
+   \global\let\hscode=\orighscode
+   \global\let\endhscode=\origendhscode}%
+
+\makeatother
+\EndFmtInput
+%
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{1ex plus 0.5ex minus 0.2ex}
+\begin{document}
+
+\section*{Exercises from Chapter 1}
+
+\subsection*{Exercise 1.4}
+The replacement of the condition \ensuremath{\Varid{k}\mathbin{\uparrow}\mathrm{2}\mathbin{>}\Varid{n}} by \ensuremath{\Varid{k}\mathbin{\uparrow}\mathrm{2}\geq \Varid{n}} in the definition of \ensuremath{\Varid{ldf}} makes no difference. This is because, in the case where \ensuremath{\Varid{k}} is such that \ensuremath{\Varid{k}\mathbin{\uparrow}\mathrm{2}\mathrel{=}\Varid{n}}, the condition \ensuremath{\Varid{divides}\;\Varid{k}\;\Varid{n}} is true. Thus the case is handled by the first guarded equation.
+
+\subsection*{Exercise 1.6}
+Based only on \ensuremath{\Varid{divides}}, I would guess:  
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{3}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[3]{}\Varid{rem}\mathbin{::}\Conid{Integer}\to \Conid{Integer}\to \Conid{Integer}{}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+
+\subsection*{Exercise 1.7}
+\ensuremath{\Varid{divides}\;\mathrm{5}} is a procedure that takes an integer as a parameter and returns a boolean value. Thus it is an expression of type \ensuremath{\Conid{Integer}\to \Conid{Bool}}.
+
+\ensuremath{\Varid{divides}\;\mathrm{5}\;\mathrm{7}} evaluates to a boolean value, thus it is an expression of type \ensuremath{\Conid{Bool}}.
+
+\subsection*{Exercise 1.9}
+A function that gives the maximum of a list of integers, using the predefined function \ensuremath{\Varid{max}}.
+
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{3}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{18}{@{}>{\hspre}c<{\hspost}@{}}%
+\column{18E}{@{}l@{}}%
+\column{22}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[3]{}\Varid{maxInt}{}\<[18]%
+\>[18]{}\mathbin{::}{}\<[18E]%
+\>[22]{}[\mskip1.5mu \Conid{Int}\mskip1.5mu]\to \Conid{Int}{}\<[E]%
+\\
+\>[3]{}\Varid{maxInt}\;[\mskip1.5mu \mskip1.5mu]{}\<[18]%
+\>[18]{}\mathrel{=}{}\<[18E]%
+\>[22]{}\Varid{error}\;\text{\tt \char34 empty~list\char34}{}\<[E]%
+\\
+\>[3]{}\Varid{maxInt}\;[\mskip1.5mu \Varid{x}\mskip1.5mu]{}\<[18]%
+\>[18]{}\mathrel{=}{}\<[18E]%
+\>[22]{}\Varid{x}{}\<[E]%
+\\
+\>[3]{}\Varid{maxInt}\;(\Varid{x}\mathbin{:}\Varid{xs}){}\<[18]%
+\>[18]{}\mathrel{=}{}\<[18E]%
+\>[22]{}\Varid{max}\;\Varid{x}\;(\Varid{maxInt}\;\Varid{xs}){}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+
+\subsection*{Exercise 1.10}
+A function \ensuremath{\Varid{removeFst}} that removes the first occurrence of an integer \ensuremath{\Varid{m}} from a list of integers. If \ensuremath{\Varid{m}} does not occur in the list, the list remains unchanged.
+
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{3}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{16}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{24}{@{}>{\hspre}c<{\hspost}@{}}%
+\column{24E}{@{}l@{}}%
+\column{28}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{39}{@{}>{\hspre}c<{\hspost}@{}}%
+\column{39E}{@{}l@{}}%
+\column{42}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[3]{}\Varid{removeFst}{}\<[24]%
+\>[24]{}\mathbin{::}{}\<[24E]%
+\>[28]{}\Conid{Int}\to [\mskip1.5mu \Conid{Int}\mskip1.5mu]\to [\mskip1.5mu \Conid{Int}\mskip1.5mu]{}\<[E]%
+\\
+\>[3]{}\Varid{removeFst}\;\anonymous \;{}\<[16]%
+\>[16]{}[\mskip1.5mu \mskip1.5mu]{}\<[24]%
+\>[24]{}\mathrel{=}{}\<[24E]%
+\>[28]{}[\mskip1.5mu \mskip1.5mu]{}\<[E]%
+\\
+\>[3]{}\Varid{removeFst}\;\Varid{m}\;{}\<[16]%
+\>[16]{}(\Varid{x}\mathbin{:}\Varid{xs}){}\<[24]%
+\>[24]{}\mid {}\<[24E]%
+\>[28]{}\Varid{m}\equiv \Varid{x}{}\<[39]%
+\>[39]{}\mathrel{=}{}\<[39E]%
+\>[42]{}\Varid{xs}{}\<[E]%
+\\
+\>[24]{}\mid {}\<[24E]%
+\>[28]{}\Varid{otherwise}{}\<[39]%
+\>[39]{}\mathrel{=}{}\<[39E]%
+\>[42]{}\Varid{x}\mathbin{:}\Varid{removeFst}\;\Varid{m}\;\Varid{xs}{}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+
+\subsection*{Exercise 1.13}
+A function \ensuremath{\Varid{count}} for counting the number of occurences of a character in a string.
+
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{3}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{12}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{20}{@{}>{\hspre}c<{\hspost}@{}}%
+\column{20E}{@{}l@{}}%
+\column{24}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{35}{@{}>{\hspre}c<{\hspost}@{}}%
+\column{35E}{@{}l@{}}%
+\column{38}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[3]{}\Varid{count}{}\<[20]%
+\>[20]{}\mathbin{::}{}\<[20E]%
+\>[24]{}\Conid{Char}\to \Conid{String}\to \Conid{Int}{}\<[E]%
+\\
+\>[3]{}\Varid{count}\;\anonymous \;{}\<[12]%
+\>[12]{}[\mskip1.5mu \mskip1.5mu]{}\<[20]%
+\>[20]{}\mathrel{=}{}\<[20E]%
+\>[24]{}\mathrm{0}{}\<[E]%
+\\
+\>[3]{}\Varid{count}\;\Varid{c}\;{}\<[12]%
+\>[12]{}(\Varid{x}\mathbin{:}\Varid{xs}){}\<[20]%
+\>[20]{}\mid {}\<[20E]%
+\>[24]{}\Varid{c}\equiv \Varid{x}{}\<[35]%
+\>[35]{}\mathrel{=}{}\<[35E]%
+\>[38]{}\mathrm{1}\mathbin{+}\Varid{count}\;\Varid{c}\;\Varid{xs}{}\<[E]%
+\\
+\>[20]{}\mid {}\<[20E]%
+\>[24]{}\Varid{otherwise}{}\<[35]%
+\>[35]{}\mathrel{=}{}\<[35E]%
+\>[38]{}\Varid{count}\;\Varid{c}\;\Varid{xs}{}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+
+\subsection*{Exercise 1.14}
+A function \ensuremath{\Varid{blowup}} that converts a string $a_1, a_2, a_3, \dots$ to $a_1, a_2, a_2, a_3, a_3, a_3 \dots$
+
+Using explicit recursion:
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{3}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{5}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{7}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{11}{@{}>{\hspre}c<{\hspost}@{}}%
+\column{11E}{@{}l@{}}%
+\column{15}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{21}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{29}{@{}>{\hspre}c<{\hspost}@{}}%
+\column{29E}{@{}l@{}}%
+\column{33}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[3]{}\Varid{blowup}{}\<[11]%
+\>[11]{}\mathbin{::}{}\<[11E]%
+\>[15]{}\Conid{String}\to \Conid{String}{}\<[E]%
+\\
+\>[3]{}\Varid{blowup}{}\<[11]%
+\>[11]{}\mathrel{=}{}\<[11E]%
+\>[15]{}\Varid{blowHelper}\;\mathrm{1}{}\<[E]%
+\\
+\>[3]{}\hsindent{2}{}\<[5]%
+\>[5]{}\mathbf{where}{}\<[E]%
+\\
+\>[5]{}\hsindent{2}{}\<[7]%
+\>[7]{}\Varid{blowHelper}{}\<[29]%
+\>[29]{}\mathbin{::}{}\<[29E]%
+\>[33]{}\Conid{Int}\to \Conid{String}\to \Conid{String}{}\<[E]%
+\\
+\>[5]{}\hsindent{2}{}\<[7]%
+\>[7]{}\Varid{blowHelper}\;\anonymous \;{}\<[21]%
+\>[21]{}[\mskip1.5mu \mskip1.5mu]{}\<[29]%
+\>[29]{}\mathrel{=}{}\<[29E]%
+\>[33]{}[\mskip1.5mu \mskip1.5mu]{}\<[E]%
+\\
+\>[5]{}\hsindent{2}{}\<[7]%
+\>[7]{}\Varid{blowHelper}\;\Varid{n}\;{}\<[21]%
+\>[21]{}(\Varid{x}\mathbin{:}\Varid{xs}){}\<[29]%
+\>[29]{}\mathrel{=}{}\<[29E]%
+\>[33]{}\Varid{replicate}\;\Varid{n}\;\Varid{x}\plus \Varid{blowHelper}\;(\Varid{n}\mathbin{+}\mathrm{1})\;\Varid{xs}{}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+
+More elegant solution:
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{3}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{12}{@{}>{\hspre}c<{\hspost}@{}}%
+\column{12E}{@{}l@{}}%
+\column{16}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[3]{}\Varid{blowup'}{}\<[12]%
+\>[12]{}\mathbin{::}{}\<[12E]%
+\>[16]{}\Conid{String}\to \Conid{String}{}\<[E]%
+\\
+\>[3]{}\Varid{blowup'}{}\<[12]%
+\>[12]{}\mathrel{=}{}\<[12E]%
+\>[16]{}\Varid{concat}\mathbin{\circ}(\Varid{zipWith}\;\Varid{replicate}\;[\mskip1.5mu \mathrm{1}\mathinner{\ldotp\ldotp}\mskip1.5mu]){}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+
+\subsection*{Exercise 1.15}
+A function \ensuremath{\Varid{srtString}\mathbin{::}[\mskip1.5mu \Conid{String}\mskip1.5mu]\to [\mskip1.5mu \Conid{String}\mskip1.5mu]} that sorts a list of strings in alphabetical order
+
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{3}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{5}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{17}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{20}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{28}{@{}>{\hspre}c<{\hspost}@{}}%
+\column{28E}{@{}l@{}}%
+\column{32}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{43}{@{}>{\hspre}c<{\hspost}@{}}%
+\column{43E}{@{}l@{}}%
+\column{46}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[3]{}\Varid{srtString}{}\<[28]%
+\>[28]{}\mathbin{::}{}\<[28E]%
+\>[32]{}[\mskip1.5mu \Conid{String}\mskip1.5mu]\to [\mskip1.5mu \Conid{String}\mskip1.5mu]{}\<[E]%
+\\
+\>[3]{}\Varid{srtString}\;{}\<[17]%
+\>[17]{}[\mskip1.5mu \mskip1.5mu]{}\<[28]%
+\>[28]{}\mathrel{=}{}\<[28E]%
+\>[32]{}[\mskip1.5mu \mskip1.5mu]{}\<[E]%
+\\
+\>[3]{}\Varid{srtString}\;{}\<[17]%
+\>[17]{}\Varid{xs}{}\<[28]%
+\>[28]{}\mathrel{=}{}\<[28E]%
+\>[32]{}\Varid{m}\mathbin{:}(\Varid{srtString}\;(\Varid{removeString}\;\Varid{m}\;\Varid{xs})){}\<[E]%
+\\
+\>[3]{}\hsindent{2}{}\<[5]%
+\>[5]{}\mathbf{where}\;\Varid{m}\mathrel{=}\Varid{mnmString}\;\Varid{xs}{}\<[E]%
+\\[\blanklineskip]%
+\>[3]{}\Varid{removeString}{}\<[28]%
+\>[28]{}\mathbin{::}{}\<[28E]%
+\>[32]{}\Conid{String}\to [\mskip1.5mu \Conid{String}\mskip1.5mu]\to [\mskip1.5mu \Conid{String}\mskip1.5mu]{}\<[E]%
+\\
+\>[3]{}\Varid{removeString}\;{}\<[17]%
+\>[17]{}\anonymous \;{}\<[20]%
+\>[20]{}[\mskip1.5mu \mskip1.5mu]{}\<[28]%
+\>[28]{}\mathrel{=}{}\<[28E]%
+\>[32]{}[\mskip1.5mu \mskip1.5mu]{}\<[E]%
+\\
+\>[3]{}\Varid{removeString}\;{}\<[17]%
+\>[17]{}\Varid{m}\;{}\<[20]%
+\>[20]{}(\Varid{x}\mathbin{:}\Varid{xs}){}\<[28]%
+\>[28]{}\mid {}\<[28E]%
+\>[32]{}\Varid{m}\equiv \Varid{x}{}\<[43]%
+\>[43]{}\mathrel{=}{}\<[43E]%
+\>[46]{}\Varid{xs}{}\<[E]%
+\\
+\>[28]{}\mid {}\<[28E]%
+\>[32]{}\Varid{otherwise}{}\<[43]%
+\>[43]{}\mathrel{=}{}\<[43E]%
+\>[46]{}\Varid{x}\mathbin{:}\Varid{removeString}\;\Varid{m}\;\Varid{xs}{}\<[E]%
+\\[\blanklineskip]%
+\>[3]{}\Varid{mnmString}{}\<[28]%
+\>[28]{}\mathbin{::}{}\<[28E]%
+\>[32]{}[\mskip1.5mu \Conid{String}\mskip1.5mu]\to \Conid{String}{}\<[E]%
+\\
+\>[3]{}\Varid{mnmString}\;{}\<[17]%
+\>[17]{}[\mskip1.5mu \mskip1.5mu]{}\<[28]%
+\>[28]{}\mathrel{=}{}\<[28E]%
+\>[32]{}[\mskip1.5mu \mskip1.5mu]{}\<[E]%
+\\
+\>[3]{}\Varid{mnmString}\;{}\<[17]%
+\>[17]{}[\mskip1.5mu \Varid{x}\mskip1.5mu]{}\<[28]%
+\>[28]{}\mathrel{=}{}\<[28E]%
+\>[32]{}\Varid{x}{}\<[E]%
+\\
+\>[3]{}\Varid{mnmString}\;{}\<[17]%
+\>[17]{}(\Varid{x}\mathbin{:}\Varid{xs}){}\<[28]%
+\>[28]{}\mathrel{=}{}\<[28E]%
+\>[32]{}\Varid{min}\;\Varid{x}\;(\Varid{mnmString}\;\Varid{xs}){}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+
+\subsection*{Exercise 1.17}
+A function \ensuremath{\Varid{substring}\mathbin{::}\Conid{String}\to \Conid{String}\to \Conid{Bool}} that checks whether \ensuremath{\Varid{str1}} is a substring of \ensuremath{\Varid{str2}}.
+
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{3}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{11}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{14}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{19}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{27}{@{}>{\hspre}c<{\hspost}@{}}%
+\column{27E}{@{}l@{}}%
+\column{31}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{49}{@{}>{\hspre}c<{\hspost}@{}}%
+\column{49E}{@{}l@{}}%
+\column{52}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[3]{}\Varid{prefix}{}\<[27]%
+\>[27]{}\mathbin{::}{}\<[27E]%
+\>[31]{}\Conid{String}\to \Conid{String}\to \Conid{Bool}{}\<[E]%
+\\
+\>[3]{}\Varid{prefix}\;{}\<[11]%
+\>[11]{}[\mskip1.5mu \mskip1.5mu]\;{}\<[19]%
+\>[19]{}\Varid{ys}{}\<[27]%
+\>[27]{}\mathrel{=}{}\<[27E]%
+\>[31]{}\Conid{True}{}\<[E]%
+\\
+\>[3]{}\Varid{prefix}\;{}\<[11]%
+\>[11]{}(\Varid{x}\mathbin{:}\Varid{xs})\;{}\<[19]%
+\>[19]{}[\mskip1.5mu \mskip1.5mu]{}\<[27]%
+\>[27]{}\mathrel{=}{}\<[27E]%
+\>[31]{}\Conid{False}{}\<[E]%
+\\
+\>[3]{}\Varid{prefix}\;{}\<[11]%
+\>[11]{}(\Varid{x}\mathbin{:}\Varid{xs})\;{}\<[19]%
+\>[19]{}(\Varid{y}\mathbin{:}\Varid{ys}){}\<[27]%
+\>[27]{}\mathrel{=}{}\<[27E]%
+\>[31]{}(\Varid{x}\equiv \Varid{y})\mathrel{\wedge}\Varid{prefix}\;\Varid{xs}\;\Varid{ys}{}\<[E]%
+\\[\blanklineskip]%
+\>[3]{}\Varid{substring}{}\<[27]%
+\>[27]{}\mathbin{::}{}\<[27E]%
+\>[31]{}\Conid{String}\to \Conid{String}\to \Conid{Bool}{}\<[E]%
+\\
+\>[3]{}\Varid{substring}\;{}\<[14]%
+\>[14]{}[\mskip1.5mu \mskip1.5mu]\;{}\<[19]%
+\>[19]{}\anonymous {}\<[27]%
+\>[27]{}\mathrel{=}{}\<[27E]%
+\>[31]{}\Conid{True}{}\<[E]%
+\\
+\>[3]{}\Varid{substring}\;{}\<[14]%
+\>[14]{}\anonymous \;{}\<[19]%
+\>[19]{}[\mskip1.5mu \mskip1.5mu]{}\<[27]%
+\>[27]{}\mathrel{=}{}\<[27E]%
+\>[31]{}\Conid{False}{}\<[E]%
+\\
+\>[3]{}\Varid{substring}\;{}\<[14]%
+\>[14]{}\Varid{xs}\;{}\<[19]%
+\>[19]{}(\Varid{y}\mathbin{:}\Varid{ys}){}\<[27]%
+\>[27]{}\mid {}\<[27E]%
+\>[31]{}\Varid{prefix}\;\Varid{xs}\;(\Varid{y}\mathbin{:}\Varid{ys}){}\<[49]%
+\>[49]{}\mathrel{=}{}\<[49E]%
+\>[52]{}\Conid{True}{}\<[E]%
+\\
+\>[27]{}\mid {}\<[27E]%
+\>[31]{}\Varid{substring}\;\Varid{xs}\;\Varid{ys}{}\<[49]%
+\>[49]{}\mathrel{=}{}\<[49E]%
+\>[52]{}\Conid{True}{}\<[E]%
+\\
+\>[27]{}\mid {}\<[27E]%
+\>[31]{}\Varid{otherwise}{}\<[49]%
+\>[49]{}\mathrel{=}{}\<[49E]%
+\>[52]{}\Conid{False}{}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+
+\subsection*{Exercise 1.18}
+Find expressions with the following types:
+\begin{enumerate}
+  \item \ensuremath{[\mskip1.5mu \Conid{String}\mskip1.5mu]}\\
+     answer: \ensuremath{[\mskip1.5mu \text{\tt \char34 Text\char34},\text{\tt \char34 More~text\char34}\mskip1.5mu]}
+
+  \item \ensuremath{(\Conid{Bool},\Conid{String})}\\
+     answer: \ensuremath{(\Conid{True},\text{\tt \char34 Indeed\char34})}
+
+  \item \ensuremath{[\mskip1.5mu (\Conid{Bool},\Conid{String})\mskip1.5mu]}\\
+     answer: \ensuremath{[\mskip1.5mu (\Conid{True},\text{\tt \char34 Yes\char34}),(\Conid{False},\text{\tt \char34 No\char34})\mskip1.5mu]}
+
+  \item \ensuremath{([\mskip1.5mu \Conid{Bool}\mskip1.5mu],\Conid{String})}\\
+     answer: \ensuremath{([\mskip1.5mu \Conid{True},\Conid{False}\mskip1.5mu],\text{\tt \char34 What?\char34})}
+
+  \item \ensuremath{\Conid{Bool}\to \Conid{Bool}}\\
+     answer: \ensuremath{\neg }
+\end{enumerate}
+
+\subsection*{Exercise 1.19}
+Find the types of the following predefined functions, supply them with arguments of the expected types, and try to guess what they do.
+
+\begin{enumerate}
+  \item \ensuremath{\Varid{head}\mathbin{::}[\mskip1.5mu \Varid{a}\mskip1.5mu]\to \Varid{a}}\\
+     returns the first element from a list
+
+  \item \ensuremath{\Varid{last}\mathbin{::}[\mskip1.5mu \Varid{a}\mskip1.5mu]\to \Varid{a}}\\
+     returns the last element from a list
+
+  \item \ensuremath{\Varid{init}\mathbin{::}[\mskip1.5mu \Varid{a}\mskip1.5mu]\to [\mskip1.5mu \Varid{a}\mskip1.5mu]}\\
+     returns a new list with the last element from the old list removed
+
+  \item \ensuremath{\Varid{fst}\mathbin{::}(\Varid{a},\Varid{b})\to \Varid{a}}\\
+     returns the first element of a pair
+
+  \item \ensuremath{(\plus )\mathbin{::}[\mskip1.5mu \Varid{a}\mskip1.5mu]\to [\mskip1.5mu \Varid{a}\mskip1.5mu]\to [\mskip1.5mu \Varid{a}\mskip1.5mu]}\\
+     returns a list with the contents of the second list appended to the end of the first list
+
+  \item \ensuremath{\Varid{flip}\mathbin{::}(\Varid{a}\to \Varid{b}\to \Varid{c})\to \Varid{b}\to \Varid{a}\to \Varid{c}}\\
+     given a function of 2 arguments, returns a function with the order of the two arguments interchanged
+
+  \item \ensuremath{\Varid{flip}\;(\plus )\mathbin{::}[\mskip1.5mu \Varid{a}\mskip1.5mu]\to [\mskip1.5mu \Varid{a}\mskip1.5mu]\to [\mskip1.5mu \Varid{a}\mskip1.5mu]}\\
+     returns a list with the contents of the first list appended to the end of the second list
+\end{enumerate}
+
+\subsection*{Exercise 1.20}
+Use \ensuremath{\Varid{map}} to write a function \ensuremath{\Varid{lengths}} that takes a list of lists and returns a list of the corresponding list lengths.
+
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{3}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{12}{@{}>{\hspre}c<{\hspost}@{}}%
+\column{12E}{@{}l@{}}%
+\column{16}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[3]{}\Varid{lengths}{}\<[12]%
+\>[12]{}\mathbin{::}{}\<[12E]%
+\>[16]{}[\mskip1.5mu [\mskip1.5mu \Varid{a}\mskip1.5mu]\mskip1.5mu]\to [\mskip1.5mu \Conid{Int}\mskip1.5mu]{}\<[E]%
+\\
+\>[3]{}\Varid{lengths}{}\<[12]%
+\>[12]{}\mathrel{=}{}\<[12E]%
+\>[16]{}\Varid{map}\;\Varid{length}{}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+
+\subsection*{Exercise 1.21}
+Use \ensuremath{\Varid{map}} to write a function \ensuremath{\Varid{sumLengths}} that takes a list of lists and returns the sum of their lenghts.
+
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{3}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{15}{@{}>{\hspre}c<{\hspost}@{}}%
+\column{15E}{@{}l@{}}%
+\column{19}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[3]{}\Varid{sumLengths}{}\<[15]%
+\>[15]{}\mathbin{::}{}\<[15E]%
+\>[19]{}[\mskip1.5mu [\mskip1.5mu \Varid{a}\mskip1.5mu]\mskip1.5mu]\to \Conid{Int}{}\<[E]%
+\\
+\>[3]{}\Varid{sumLengths}{}\<[15]%
+\>[15]{}\mathrel{=}{}\<[15E]%
+\>[19]{}\Varid{sum}\mathbin{\circ}\Varid{map}\;\Varid{length}{}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+
+\subsection*{Exercise 1.22}
+We modify the defining equation of \ensuremath{\Varid{ldp}} as follows:
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{3}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{8}{@{}>{\hspre}c<{\hspost}@{}}%
+\column{8E}{@{}l@{}}%
+\column{12}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[3]{}\Varid{ldp}{}\<[8]%
+\>[8]{}\mathbin{::}{}\<[8E]%
+\>[12]{}\Conid{Integer}\to \Conid{Integer}{}\<[E]%
+\\
+\>[3]{}\Varid{ldp}{}\<[8]%
+\>[8]{}\mathrel{=}{}\<[8E]%
+\>[12]{}\Varid{ldpf}\;\Varid{primes1}{}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+
+Now, \ensuremath{\Varid{ldp}} works exactly as though we had written \ensuremath{\Varid{ldp}\;\Varid{n}\mathrel{=}\Varid{ldpf}\;\Varid{primes1}\;\Varid{n}}.
+
+\ensuremath{\Varid{ldpf}} is a function of type \ensuremath{[\mskip1.5mu \Conid{Integer}\mskip1.5mu]\to \Conid{Integer}\to \Conid{Integer}}. What we did above was to supply it with only a first argument, causing it to return a function of type \ensuremath{\Conid{Integer}\to \Conid{Integer}} -- which is what we wanted for \ensuremath{\Varid{ldp}}.
+
+\end{document}

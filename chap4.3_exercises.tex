@@ -1,0 +1,40 @@
+\section{Special Sets}
+
+%unfinished
+\begin{Exercise} [number=10]
+  Show:
+  \Question $\{ a \} = \{ b \} \textrm{ iff } a = b$,
+  \Question $\{ a_1, a_2 \} = \{ b_1, b_2 \} \textrm{ iff: } a_1 = b_1 \land a_2 = b_2 \textrm{, or } a_1 = b_2 \land a_2 = b_1$.
+
+  NOTE: these \emph{can} be formally answered!
+\end{Exercise}
+
+\begin{Answer} [number=10.1]
+  Because $\{ a \}$ and $\{ b \}$ are both \term{singletons}, in order
+  to test if the two sets are the same (by Extensionality and such) we
+  only need to compare the element from one to the element from the
+  other.
+\end{Answer}
+
+\begin{Exercise} [number=11]
+  Explain that $\emptyset \neq \{\emptyset\}$. And that $\lbrace
+  \emptyset \rbrace \neq \bigl\{\{ \emptyset \}\bigr\}$.
+\end{Exercise}
+
+\begin{Answer}
+  First, remember the \term{Principle of Extensionality}: that a set
+  is completely defined by its elements, and as such is equal to
+  another set with the same elements.
+	
+  I'll start with showing why $\emptyset \neq \{\emptyset\}$. What are
+  the contents of $\emptyset$? Nothing---which can also be seen in the
+  fact that $\cardinality{\emptyset} = 0$.  In contrast,
+  $\cardinality{ \{ \emptyset \} } = 1$ because it contains one
+  element: the empty set!
+
+  The same reasoning can be applied to the other two, because the
+  first pair happen to be the respective contents of the second
+  pair. Since sets are totally defined by their elements, and we've
+  shown that the elements are not equal, then the respective enclosing
+  sets are also not equal.
+\end{Answer}

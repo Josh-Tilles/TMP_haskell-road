@@ -1,0 +1,24 @@
+This is pdfTeX, Version 3.1415926-2.3-1.40.12 (TeX Live 2011) (format=latex 2012.4.23)  7 AUG 2012 23:12
+entering extended mode
+ restricted \write18 enabled.
+ %&-line parsing enabled.
+**\nonstopmode\nofiles\PassOptionsToPackage{active,tightpage,auctex}{preview}\A
+tBeginDocument{\ifx\ifPreview\undefined\RequirePackage[displaymath,floats,graph
+ics,textmath,sections,footnotes]{preview}[2004/11/05]\fi} \input chap4.4_exerci
+ses.lhs.tex
+
+! Emergency stop.
+<*> ...11/05]\fi} \input chap4.4_exercises.lhs.tex
+                                                  
+*** (job aborted, file error in nonstop mode)
+
+ 
+Here is how much of TeX's memory you used:
+ 6 strings out of 493611
+ 148 string characters out of 3142427
+ 49291 words of memory out of 3000000
+ 3417 multiletter control sequences out of 15000+200000
+ 3640 words of font info for 14 fonts, out of 3000000 for 9000
+ 831 hyphenation exceptions out of 8191
+ 4i,0n,5p,264b,8s stack positions out of 5000i,500n,10000p,200000b,50000s
+No pages of output.

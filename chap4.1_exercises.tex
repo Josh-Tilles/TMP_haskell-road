@@ -1,0 +1,50 @@
+\section{Let's Talk About Sets}
+
+\begin{theorem}
+  \label{THM:sets:RAT}
+  For all sets $A$, $B$, and $C$, we have that:
+  \begin{enumerate}
+    \item ``reflexivity'': $A \subseteq A$ 
+    \item ``antisymmetry'': $A \subseteq B \land B \subseteq A \implies A = B$ 
+    \item ``transitivity'': $A \subseteq B \land B \subseteq C \implies A \subseteq C$ 
+  \end{enumerate}
+\end{theorem}
+
+\begin{Exercise} [number=2]
+  Show that the superset relation also has the properties of Theorem \ref{THM:sets:RAT}. I.e., show that~$\supseteq$ is reflexive, antisymmetric and transitive.
+\end{Exercise}
+
+\begin{Answer}
+  $A \subseteq B \equiv B \supseteq A$
+\end{Answer}
+
+%unfinished
+\begin{Exercise} [number=4]
+  Show that $\bigl\{ \{ 1, 2 \}, \{ 0 \}, \{ 2, 1 \} \bigr\}  =  \bigl\{ \{ 0 \}, \{ 1, 2 \} \bigr\}$.
+\end{Exercise}
+
+\begin{Answer}
+  \begin{structured_derivation}
+    \task{Prove that $\bigl\{ \{ 1, 2 \}, \{ 0 \}, \{ 2, 1 \} \bigr\}  =  \bigl\{ \{ 0 \}, \{ 1, 2 \} \bigr\}$}
+    \observation*
+      {order and repetition in this notation are irrelevant}
+      { $\{ 1, 2 \} \equiv \{ 2, 1 \} $ }
+    \isProvedBy{demonstrating that each is a subset of the other}
+    \begin{nested_derivation}
+      \task{Prove that $\bigl\{ \{ 1, 2 \}, \{ 0 \}, \{ 2, 1 \} \bigr\} \subseteq \bigl\{ \{ 0 \}, \{ 1, 2 \} \bigr\}$.}
+      
+    \end{nested_derivation}
+    \begin{nested_derivation}
+      \task{Prove that $\bigl\{ \{ 1, 2 \}, \{ 0 \}, \{ 2, 1 \} \bigr\} \supseteq \bigl\{ \{ 0 \}, \{ 1, 2 \} \bigr\}$.}
+    \end{nested_derivation}
+  \end{structured_derivation}
+\end{Answer}
+
+%unanswered
+\begin{Exercise} [number=7, difficulty=1]
+  Assume that $A$ is a set of sets. Show that $\{ x \in A \suchthat x \notin x \} \notin A$.
+\end{Exercise}
+
+%answer as something to do with principle of extension. I think. Like,
+%{x in A} = A, but not {x in A} in A. Well, UNLESS A can contain
+%itself. If it can, then there exists x in A such that x = A. ...

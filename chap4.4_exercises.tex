@@ -1,0 +1,223 @@
+\section{Algebra of Sets}
+
+\begin{Exercise} [number=13]
+  What are the types of the set difference operator $\setminus$ and of the inclusion operator $\subseteq$?
+\end{Exercise}
+
+\begin{Answer}
+  $\subseteq$ :: $s \rightarrow s \rightarrow t$\\
+  $\setminus$ :: $s \rightarrow s \rightarrow s$
+\end{Answer}
+
+
+\begin{Exercise} [number=14]
+  Give the types of the following expressions:
+  \Question $x \in \Set{x}{E(x)}$.
+  \Question $\Set{x}{E(x)}$.
+  \Question $(A \intersect B) \subseteq C$.
+  \Question $(A \union B) \intersect C$.
+  \Question $\forall{x} \colon x \in A \implies x \in B$.
+  \Question $A=B$.
+  \Question $a \in A \iff a \in B$.
+\end{Exercise}
+
+\begin{Answer}
+$t$, $s$, $t$, $s$, $t$, $t$, $t$
+\end{Answer}
+
+%unfinished
+%TODO leave the set notation and dive into logical quantifiers and
+%then do Dijkstra calculation
+\begin{Exercise} [number=17]
+  $A$, $B$ and $C$ are sets. Show:
+  \Question $A \nsubseteq B \iff A - B \neq \emptyset$.
+  \Question $A \intersect B = A - (A - B)$.
+\end{Exercise}
+
+\begin{Answer} [number=17.1]
+  \begin{structured_derivation}
+    \task{Show that $A \nsubseteq B$ when:}
+    \assumption{$A - B \neq \emptyset$}
+    \task{$A - B \neq \emptyset$}
+    \justification[\iff]{Rewrite the set difference notation (?)}
+    \dijk{$\Set{x}{x \in A \land x \notin B} \neq \emptyset$}
+    \justification[\iff]{Rewrite the \dots}
+    \dijk{$\exists{x \in A} \suchThat x \notin B$}
+    \observation{$A-B$ can be rewritten as:}{}    
+  \end{structured_derivation}
+\end{Answer}
+
+
+\begin{Answer} [number=17.2]
+  \begin{structured_derivation}
+    \task{Prove that $A \intersect B = A - (A-B)$}
+    \isProvedBy{Demonstrate that the RHS is a subset of the LHS and vice-versa}
+    \begin{nested_derivation}
+      \task{Prove that $A \intersect B \subseteq A - (A-B)$}
+      \isProvedBy{??}
+      \begin{nested_derivation}
+        \task{Prove that $x = y$ when:}
+        \assumption{$\exists{x} \suchThat x \in (A \intersect B)$}
+        \observation{definition of subset \& intersection of
+          sets}{$\exists{x} \suchThat x \in A \land x \in B$}
+        \assumption{$\exists{y} \suchThat y \in (A - (A-B))$}
+        \observation{??}{$\exists{y \in A} \suchThat y \notin A-B$}
+        
+        
+      \end{nested_derivation}
+    \end{nested_derivation}
+    \begin{nested_derivation}
+      \task{Prove that $A - (A - B) \subseteq A \intersect B$}    
+    \end{nested_derivation}
+  \end{structured_derivation}
+\end{Answer}
+
+%TODO missed steps on commutativity
+\begin{Exercise} [number=19]
+  Express $(A \union B) \intersect (C \union D)$ as the union of four
+  intersections.
+\end{Exercise}
+
+\begin{Answer}
+  \begin{structured_derivation}
+    \task{$(A \union B) \intersect (C \union D)$}
+    \justification[\equiv]{distributivity}
+    \dijk{$\bigl(A \intersect (C \union D)\bigr) \union \bigl(B
+      \intersect (C \union D)\bigr)$}
+    \justification[\equiv]{distributivity}
+    \dijk{$\bigl( (A \intersect C) \union (A \intersect D) \bigr)
+      \union \bigl(B \intersect (C \union D)\bigr)$}
+    \justification[\equiv]{distributivity}
+    \dijk{$\bigl( (A \intersect C) \union (A \intersect D) \bigr)
+      \union \bigl( (B \intersect C) \union (B \intersect D) \bigr)$}
+    \justification[\equiv]{trivial rewrite}
+    \dijk{$\cumulUnion \bigl( (A \intersect C), (A \intersect D), (B
+        \intersect C), (B \intersect D) \bigr)$}
+  \end{structured_derivation}
+\end{Answer}
+
+%unanswered
+\begin{Exercise} [number=21]
+  Show that $A \xor B = (A - B) \union (B - A) = (A \union B) - (A
+  \intersect B)$.
+  
+  ($A \xor B$ is the set of all objects that are in $A$ or $B$ but
+  \emph{not both}.)
+\end{Exercise}
+
+\begin{Answer}
+  \begin{structured_derivation}
+    \task{see above (I'm getting lazy)}
+    \observation{??}{$A \xor B \equiv \Set{x}{x \in A \xor x \in B}$}
+  \end{structured_derivation}
+\end{Answer}
+
+%unfinished
+%TODO typeset a way to say X := {1, 2, 3}, y := {1}, z := {2}. Neither
+%  y nor z is a subset of the other. (it's a counterexample)
+\begin{Exercise} [number=23] 
+  Let $X$ be a set with at least two elements. Then by Theorem \ref{THM:sets:RAT},
+  the relation $\subseteq$ on $\powerset(X)$ has the properties of reflexivity,
+  antisymmetry, and transitivity. The relation $\leq$ on $\reals$ also has these
+  properties. The relation $\leq$ on $\reals$ has the further property of 
+  \term{linearity}: for all $x, y \in \reals$, either $x \leq y$ or $y \leq x$.
+  Show that $\subseteq$ on $\powerset(X)$ lacks this property.
+\end{Exercise}
+
+%unfinished
+%TODO typeset from notebook
+\begin{Exercise} [number=26]
+  Give a logical translation of $\cumulIntersect \mathcal{F} \subseteq
+  \cumulUnion \mathcal{G}$ using only the relation $\in$.
+\end{Exercise}
+
+%unfinished
+%TODO typeset from notebook
+\begin{Exercise} [number=27]
+  Let $\mathcal{F}$ be a family of sets. Show that there is a set $A$ with the 
+  following properties:
+  \Question $\mathcal{F} \subseteq \powerset(A)$.
+  \Question For all sets $B$: if $\mathcal{F} \subseteq \powerset(B)$ then $A \subseteq B$.
+\end{Exercise}
+
+%unanswered
+%@tedious
+\begin{Exercise} [number=29]
+  fill in and prove Theorem 4.20
+\end{Exercise}
+
+%unfinished: not transferred from notebook.
+%TODO: make the powersets cascadingly smaller
+\begin{Exercise} [number=30]
+Answer as many of the following questions as you can.
+\Question Determine: $\powerset(\emptyset)$, $\powerset(\powerset(\emptyset))$, $\powerset(\powerset(\powerset(\emptyset)))$
+\Question How many elements has $\powerset^{5}(\emptyset)$?
+\Question How many elements has $\powerset(A)$, given that $A$ as $n$ elements?
+\end{Exercise}
+
+%unfinished: need to LaTeX-ize and formalize/arrange argument from notebook.
+\begin{Exercise} [number=31]
+Check whether the following is true: if two sets have the same subsets, then they are equal. I.e.: if $\powerset(A) = \powerset(B)$, then $A = B$. Give a proof or a refutation by means of a counterexample.
+\end{Exercise}
+
+%unanswered
+\begin{Exercise} [number=32]
+Is it true that for all sets $A$ and $B$:
+\Question $\powerset(A \intersect B) = \powerset(A) \intersect \powerset(B)$?
+\Question $\powerset(A \union B) = \powerset(A) \union \powerset(B)$?
+\ExeText Provide either a proof or a refutation by counter-example.
+\end{Exercise}
+
+%unanswered
+%@tedious
+%@numerous
+\begin{Exercise} [number=33, difficulty=1]
+  Show: 
+
+  \Question $B \intersect \bigl( \cumulUnion_{i \in I} A_i
+  \bigr) = \cumulUnion_{i \in I}(B \intersect A_i)$
+  
+  \Question $B \union \bigl( \cumulIntersect_{i \in I} A_i \bigr) =
+  \cumulIntersect_{i \in I}(B \union A_i)$
+  
+  \Question $\bigl(\cumulUnion_{i \in I} A_i \bigr)^c =
+  \cumulIntersect_{i \in I} A_{i}^{c}$, assuming that $\forall{i} \in
+  I \colon A_i \subseteq X$
+
+  \Question $\bigl(\cumulIntersect_{i \in I} A_i \bigr)^c =
+  \cumulUnion_{i \in I} A_{i}^{c}$, assuming that $\forall \in I
+  \colon A_i \subseteq X$
+\end{Exercise}
+
+%unanswered
+\begin{Exercise} [number=34, difficulty=1]
+  Assume that you are given a certain set $A_0$. Suppose you are
+  assigned the task of finding sets $A_1$, $A_2$, $A_3$, \dots, such
+  that $\powerset(A_1) \subseteq A_0$, $\powerset(A_2) \subseteq A_1$,
+  $\powerset(A_3) \subseteq A_2$, \dots Show that no matter how hard
+  you try, you will eventually fail, that is: hit a set $A_n$ for
+  which no $A_{n+1}$ exists such that $\powerset(A_{n+1}) \subseteq
+  A_n$. (I.e., $\emptyset \notin A_n$.)
+
+  \ExeText Suppose you can go on forever. Show this would entail
+  $\powerset\bigl(\cumulIntersect_{i \in \naturals} A_i \bigr)
+  \subseteq \cumulIntersect_{i \in \naturals} A_i$. Apply exercise 4.7.
+\end{Exercise}
+
+%unanswered
+%@next
+\begin{Exercise} [number=35, difficulty=1]
+  Suppose that the collection $\mathcal{K}$ of sets satisfies the
+  following condition:
+  \begin{displaymath}
+    \forall{A} \in \mathcal{K} \colon A = \emptyset \lor \exists{B \in
+    \mathcal{K}} \suchthat A = \powerset(B)
+  \end{displaymath}
+  \ExeText Show that every element of $\mathcal{K}$ has the form
+  $\powerset^n(\emptyset)$ for some $n \in \naturals$. (N.B.:
+  $\powerset^0(\emptyset) = \emptyset$)
+\end{Exercise}
+
+%%% Local Variables:
+%%% TeX-master: "exercises_base"
+%%% End:

@@ -1,0 +1,2474 @@
+\documentclass{report}
+\usepackage{haskell_exercises}
+
+\usepackage{amssymb}
+\newcommand*{\wrt}{w.r.t.}
+
+%% ODER: format ==         = "\mathrel{==}"
+%% ODER: format /=         = "\neq "
+%
+%
+\makeatletter
+\@ifundefined{lhs2tex.lhs2tex.sty.read}%
+  {\@namedef{lhs2tex.lhs2tex.sty.read}{}%
+   \newcommand\SkipToFmtEnd{}%
+   \newcommand\EndFmtInput{}%
+   \long\def\SkipToFmtEnd#1\EndFmtInput{}%
+  }\SkipToFmtEnd
+
+\newcommand\ReadOnlyOnce[1]{\@ifundefined{#1}{\@namedef{#1}{}}\SkipToFmtEnd}
+\usepackage{amstext}
+\usepackage{amssymb}
+\usepackage{stmaryrd}
+\DeclareFontFamily{OT1}{cmtex}{}
+\DeclareFontShape{OT1}{cmtex}{m}{n}
+  {<5><6><7><8>cmtex8
+   <9>cmtex9
+   <10><10.95><12><14.4><17.28><20.74><24.88>cmtex10}{}
+\DeclareFontShape{OT1}{cmtex}{m}{it}
+  {<-> ssub * cmtt/m/it}{}
+\newcommand{\texfamily}{\fontfamily{cmtex}\selectfont}
+\DeclareFontShape{OT1}{cmtt}{bx}{n}
+  {<5><6><7><8>cmtt8
+   <9>cmbtt9
+   <10><10.95><12><14.4><17.28><20.74><24.88>cmbtt10}{}
+\DeclareFontShape{OT1}{cmtex}{bx}{n}
+  {<-> ssub * cmtt/bx/n}{}
+\newcommand{\tex}[1]{\text{\texfamily#1}}	% NEU
+
+\newcommand{\Sp}{\hskip.33334em\relax}
+
+
+\newcommand{\Conid}[1]{\mathit{#1}}
+\newcommand{\Varid}[1]{\mathit{#1}}
+\newcommand{\anonymous}{\kern0.06em \vbox{\hrule\@width.5em}}
+\newcommand{\plus}{\mathbin{+\!\!\!+}}
+\newcommand{\bind}{\mathbin{>\!\!\!>\mkern-6.7mu=}}
+\newcommand{\rbind}{\mathbin{=\mkern-6.7mu<\!\!\!<}}% suggested by Neil Mitchell
+\newcommand{\sequ}{\mathbin{>\!\!\!>}}
+\renewcommand{\leq}{\leqslant}
+\renewcommand{\geq}{\geqslant}
+\usepackage{polytable}
+
+%mathindent has to be defined
+\@ifundefined{mathindent}%
+  {\newdimen\mathindent\mathindent\leftmargini}%
+  {}%
+
+\def\resethooks{%
+  \global\let\SaveRestoreHook\empty
+  \global\let\ColumnHook\empty}
+\newcommand*{\savecolumns}[1][default]%
+  {\g@addto@macro\SaveRestoreHook{\savecolumns[#1]}}
+\newcommand*{\restorecolumns}[1][default]%
+  {\g@addto@macro\SaveRestoreHook{\restorecolumns[#1]}}
+\newcommand*{\aligncolumn}[2]%
+  {\g@addto@macro\ColumnHook{\column{#1}{#2}}}
+
+\resethooks
+
+\newcommand{\onelinecommentchars}{\quad-{}- }
+\newcommand{\commentbeginchars}{\enskip\{-}
+\newcommand{\commentendchars}{-\}\enskip}
+
+\newcommand{\visiblecomments}{%
+  \let\onelinecomment=\onelinecommentchars
+  \let\commentbegin=\commentbeginchars
+  \let\commentend=\commentendchars}
+
+\newcommand{\invisiblecomments}{%
+  \let\onelinecomment=\empty
+  \let\commentbegin=\empty
+  \let\commentend=\empty}
+
+\visiblecomments
+
+\newlength{\blanklineskip}
+\setlength{\blanklineskip}{0.66084ex}
+
+\newcommand{\hsindent}[1]{\quad}% default is fixed indentation
+\let\hspre\empty
+\let\hspost\empty
+\newcommand{\NB}{\textbf{NB}}
+\newcommand{\Todo}[1]{$\langle$\textbf{To do:}~#1$\rangle$}
+
+\EndFmtInput
+\makeatother
+%
+%
+%
+%
+%
+%
+% This package provides two environments suitable to take the place
+% of hscode, called "plainhscode" and "arrayhscode". 
+%
+% The plain environment surrounds each code block by vertical space,
+% and it uses \abovedisplayskip and \belowdisplayskip to get spacing
+% similar to formulas. Note that if these dimensions are changed,
+% the spacing around displayed math formulas changes as well.
+% All code is indented using \leftskip.
+%
+% Changed 19.08.2004 to reflect changes in colorcode. Should work with
+% CodeGroup.sty.
+%
+\ReadOnlyOnce{polycode.fmt}%
+\makeatletter
+
+\newcommand{\hsnewpar}[1]%
+  {{\parskip=0pt\parindent=0pt\par\vskip #1\noindent}}
+
+% can be used, for instance, to redefine the code size, by setting the
+% command to \small or something alike
+\newcommand{\hscodestyle}{}
+
+% The command \sethscode can be used to switch the code formatting
+% behaviour by mapping the hscode environment in the subst directive
+% to a new LaTeX environment.
+
+\newcommand{\sethscode}[1]%
+  {\expandafter\let\expandafter\hscode\csname #1\endcsname
+   \expandafter\let\expandafter\endhscode\csname end#1\endcsname}
+
+% "compatibility" mode restores the non-polycode.fmt layout.
+
+\newenvironment{compathscode}%
+  {\par\noindent
+   \advance\leftskip\mathindent
+   \hscodestyle
+   \let\\=\@normalcr
+   \let\hspre\(\let\hspost\)%
+   \pboxed}%
+  {\endpboxed\)%
+   \par\noindent
+   \ignorespacesafterend}
+
+\newcommand{\compaths}{\sethscode{compathscode}}
+
+% "plain" mode is the proposed default.
+% It should now work with \centering.
+% This required some changes. The old version
+% is still available for reference as oldplainhscode.
+
+\newenvironment{plainhscode}%
+  {\hsnewpar\abovedisplayskip
+   \advance\leftskip\mathindent
+   \hscodestyle
+   \let\hspre\(\let\hspost\)%
+   \pboxed}%
+  {\endpboxed%
+   \hsnewpar\belowdisplayskip
+   \ignorespacesafterend}
+
+\newenvironment{oldplainhscode}%
+  {\hsnewpar\abovedisplayskip
+   \advance\leftskip\mathindent
+   \hscodestyle
+   \let\\=\@normalcr
+   \(\pboxed}%
+  {\endpboxed\)%
+   \hsnewpar\belowdisplayskip
+   \ignorespacesafterend}
+
+% Here, we make plainhscode the default environment.
+
+\newcommand{\plainhs}{\sethscode{plainhscode}}
+\newcommand{\oldplainhs}{\sethscode{oldplainhscode}}
+\plainhs
+
+% The arrayhscode is like plain, but makes use of polytable's
+% parray environment which disallows page breaks in code blocks.
+
+\newenvironment{arrayhscode}%
+  {\hsnewpar\abovedisplayskip
+   \advance\leftskip\mathindent
+   \hscodestyle
+   \let\\=\@normalcr
+   \(\parray}%
+  {\endparray\)%
+   \hsnewpar\belowdisplayskip
+   \ignorespacesafterend}
+
+\newcommand{\arrayhs}{\sethscode{arrayhscode}}
+
+% The mathhscode environment also makes use of polytable's parray 
+% environment. It is supposed to be used only inside math mode 
+% (I used it to typeset the type rules in my thesis).
+
+\newenvironment{mathhscode}%
+  {\parray}{\endparray}
+
+\newcommand{\mathhs}{\sethscode{mathhscode}}
+
+% texths is similar to mathhs, but works in text mode.
+
+\newenvironment{texthscode}%
+  {\(\parray}{\endparray\)}
+
+\newcommand{\texths}{\sethscode{texthscode}}
+
+% The framed environment places code in a framed box.
+
+\def\codeframewidth{\arrayrulewidth}
+\RequirePackage{calc}
+
+\newenvironment{framedhscode}%
+  {\parskip=\abovedisplayskip\par\noindent
+   \hscodestyle
+   \arrayrulewidth=\codeframewidth
+   \tabular{@{}|p{\linewidth-2\arraycolsep-2\arrayrulewidth-2pt}|@{}}%
+   \hline\framedhslinecorrect\\{-1.5ex}%
+   \let\endoflinesave=\\
+   \let\\=\@normalcr
+   \(\pboxed}%
+  {\endpboxed\)%
+   \framedhslinecorrect\endoflinesave{.5ex}\hline
+   \endtabular
+   \parskip=\belowdisplayskip\par\noindent
+   \ignorespacesafterend}
+
+\newcommand{\framedhslinecorrect}[2]%
+  {#1[#2]}
+
+\newcommand{\framedhs}{\sethscode{framedhscode}}
+
+% The inlinehscode environment is an experimental environment
+% that can be used to typeset displayed code inline.
+
+\newenvironment{inlinehscode}%
+  {\(\def\column##1##2{}%
+   \let\>\undefined\let\<\undefined\let\\\undefined
+   \newcommand\>[1][]{}\newcommand\<[1][]{}\newcommand\\[1][]{}%
+   \def\fromto##1##2##3{##3}%
+   \def\nextline{}}{\) }%
+
+\newcommand{\inlinehs}{\sethscode{inlinehscode}}
+
+% The joincode environment is a separate environment that
+% can be used to surround and thereby connect multiple code
+% blocks.
+
+\newenvironment{joincode}%
+  {\let\orighscode=\hscode
+   \let\origendhscode=\endhscode
+   \def\endhscode{\def\hscode{\endgroup\def\@currenvir{hscode}\\}\begingroup}
+   %\let\SaveRestoreHook=\empty
+   %\let\ColumnHook=\empty
+   %\let\resethooks=\empty
+   \orighscode\def\hscode{\endgroup\def\@currenvir{hscode}}}%
+  {\origendhscode
+   \global\let\hscode=\orighscode
+   \global\let\endhscode=\origendhscode}%
+
+\makeatother
+\EndFmtInput
+%
+
+% TODO put the above in an \input-able place
+% TODO I wish grave marks (`) weren't rendered like left-single-quotes.
+
+\begin{document}
+
+\chapter{Getting Started}
+We use LD(n) for the least natural number greater than 1 that divides n.
+
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{5}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{9}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[5]{}\Varid{divides}\;\Varid{d}\;\Varid{n}\mathrel{=}{}\<[E]%
+\\
+\>[5]{}\hsindent{4}{}\<[9]%
+\>[9]{}\Varid{rem}\;\Varid{n}\;\Varid{d}\equiv \mathrm{0}{}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+
+It is useful to define LD in terms of a second function that
+calculates the least divisor starting from a given threshold k, with
+$k <= n$.
+
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{5}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{14}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{31}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[5]{}\Varid{ld}\;\Varid{n}\mathrel{=}\Varid{ldf}\;\mathrm{2}\;\Varid{n}{}\<[E]%
+\\[\blanklineskip]%
+\>[5]{}\Varid{ldf}\;\Varid{k}\;\Varid{n}{}\<[14]%
+\>[14]{}\mid \Varid{k}\mathbin{`\Varid{divides}`}\Varid{n}{}\<[31]%
+\>[31]{}\mathrel{=}\Varid{k}{}\<[E]%
+\\
+\>[14]{}\mid \Varid{k}^\mathrm{2}\mathbin{>}\Varid{n}{}\<[31]%
+\>[31]{}\mathrel{=}\Varid{n}{}\<[E]%
+\\
+\>[14]{}\mid \Varid{otherwise}{}\<[31]%
+\>[31]{}\mathrel{=}\Varid{ldf}\;(\Varid{k}\mathbin{+}\mathrm{1})\;\Varid{n}{}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+
+\begin{Exercise} [number=4]
+  If \ensuremath{\Varid{ldf}} used $k^2 \geq n$ how would that change the function?
+\end{Exercise}
+
+\begin{Answer}
+  It wouldn't, because otherwise \ensuremath{\Varid{divides}\;\Varid{k}\;\Varid{n}} would have been \ensuremath{\Conid{True}}.
+\end{Answer}
+
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{5}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{9}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{22}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[5]{}\Varid{prime0}\;\Varid{n}{}\<[E]%
+\\
+\>[5]{}\hsindent{4}{}\<[9]%
+\>[9]{}\mid \Varid{n}\mathbin{>}\mathrm{1}{}\<[22]%
+\>[22]{}\mathrel{=}\Varid{error}\;\text{\tt \char34 not~a~positive~integer\char34}{}\<[E]%
+\\
+\>[5]{}\hsindent{4}{}\<[9]%
+\>[9]{}\mid \Varid{n}\equiv \mathrm{1}{}\<[22]%
+\>[22]{}\mathrel{=}\Conid{False}{}\<[E]%
+\\
+\>[5]{}\hsindent{4}{}\<[9]%
+\>[9]{}\mid \Varid{otherwise}{}\<[22]%
+\>[22]{}\mathrel{=}\Varid{ld}\;\Varid{n}\equiv \Varid{n}{}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+
+\begin{Exercise} [number=6]
+  Can you gather from the definition of \ensuremath{\Varid{divides}} what the type
+  declaration for \ensuremath{\Varid{rem}} would look like?
+\end{Exercise}
+
+\begin{Answer}
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\Varid{rem}\mathbin{::}\Conid{Integer}\to \Conid{Integer}\to \Conid{Integer}{}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+\end{Answer}
+
+\begin{Exercise} [number=9]
+  Define a function that given the maximum of a list of integers. Use
+  the predefined function \ensuremath{\Varid{max}}.
+\end{Exercise}
+
+\begin{Answer}
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{15}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\Varid{maxIn}\mathbin{::}[\mskip1.5mu \Conid{Int}\mskip1.5mu]\to \Conid{Int}{}\<[E]%
+\\
+\>[B]{}\Varid{maxIn}\;[\mskip1.5mu \mskip1.5mu]{}\<[15]%
+\>[15]{}\mathrel{=}\Varid{error}\;\text{\tt \char34 UNDEFINED:~empty~list\char34}{}\<[E]%
+\\
+\>[B]{}\Varid{maxIn}\;[\mskip1.5mu \Varid{x}\mskip1.5mu]{}\<[15]%
+\>[15]{}\mathrel{=}\Varid{x}{}\<[E]%
+\\
+\>[B]{}\Varid{maxIn}\;(\Varid{x}\mathbin{:}\Varid{xs}){}\<[15]%
+\>[15]{}\mathrel{=}\Varid{max}\;\Varid{x}\;(\Varid{maxIn}\;\Varid{xs}){}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+\end{Answer}
+
+\begin{Exercise} [number=10]
+  Define a function \text{\tt removeFst} that removes the first occurrence of an integer $m$ from a lst of integers. if \ensuremath{\Varid{m}} does not occur n the list, the list remains unchanged.
+\end{Exercise}
+
+\begin{Answer}
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{12}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{15}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{23}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{36}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\Varid{removeFst}\mathbin{::}\Conid{Int}\to [\mskip1.5mu \Conid{Int}\mskip1.5mu]\to [\mskip1.5mu \Conid{Int}\mskip1.5mu]{}\<[E]%
+\\
+\>[B]{}\Varid{removeFst}\;{}\<[12]%
+\>[12]{}\anonymous \;{}\<[15]%
+\>[15]{}[\mskip1.5mu \mskip1.5mu]{}\<[36]%
+\>[36]{}\mathrel{=}[\mskip1.5mu \mskip1.5mu]{}\<[E]%
+\\
+\>[B]{}\Varid{removeFst}\;{}\<[12]%
+\>[12]{}\Varid{m}\;{}\<[15]%
+\>[15]{}(\Varid{x}\mathbin{:}\Varid{xs}){}\<[23]%
+\>[23]{}\mid \Varid{m}\equiv \Varid{x}{}\<[36]%
+\>[36]{}\mathrel{=}\Varid{xs}{}\<[E]%
+\\
+\>[23]{}\mid \Varid{otherwise}{}\<[36]%
+\>[36]{}\mathrel{=}\Varid{x}\mathbin{:}\Varid{removeFst}\;\Varid{m}\;\Varid{xs}{}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+\end{Answer}
+
+\begin{Exercise} [number=13]
+  Write a function \ensuremath{\Varid{count}} for counting the number of occurrences of a
+  character in a string.
+\end{Exercise}
+
+\begin{Answer}
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{10}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{18}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{31}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\Varid{count}\mathbin{::}\Conid{Char}\to \Conid{String}\to \Conid{Int}{}\<[E]%
+\\
+\>[B]{}\Varid{count}\;\anonymous \;{}\<[10]%
+\>[10]{}[\mskip1.5mu \mskip1.5mu]\mathrel{=}\mathrm{0}{}\<[E]%
+\\
+\>[B]{}\Varid{count}\;\Varid{c}\;{}\<[10]%
+\>[10]{}(\Varid{y}\mathbin{:}\Varid{ys}){}\<[18]%
+\>[18]{}\mid \Varid{c}\equiv \Varid{y}{}\<[31]%
+\>[31]{}\mathrel{=}\mathrm{1}\mathbin{+}\Varid{count}\;\Varid{c}\;\Varid{ys}{}\<[E]%
+\\
+\>[18]{}\mid \Varid{otherwise}{}\<[31]%
+\>[31]{}\mathrel{=}\Varid{count}\;\Varid{c}\;\Varid{ys}{}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+\end{Answer}
+
+\begin{Exercise} [number=14]
+  Write a function \text{\tt blowup} such that \ensuremath{\Varid{blowup}``\Varid{bang}\mathbin{!}\text{\tt ''}} should yield
+  \ensuremath{\text{\tt \char34 baannngggg!!!!!\char34}}
+\end{Exercise}
+
+\begin{Answer}
+
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\Varid{blowup}\mathbin{::}\Conid{String}\to \Conid{String}{}\<[E]%
+\\
+\>[B]{}\Varid{blowup}\mathrel{=}\Varid{concat}\mathbin{\circ}\Varid{zipWith}\;\Varid{replicate}\;[\mskip1.5mu \mathrm{1}\mathinner{\ldotp\ldotp}\mskip1.5mu]{}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+
+The above solution is in point-free form because I'm under the
+impression that point-free form is what Haskellers aim for by
+default. Like, to write in point-free form often is an achievement.
+Check out the slight difference (the readability in particular) in the following definition:
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\Varid{blowup}\;\Varid{chrs}\mathrel{=}\Varid{concat}\;(\Varid{zipWith}\;\Varid{replicate}\;[\mskip1.5mu \mathrm{1}\mathinner{\ldotp\ldotp}\mskip1.5mu]\;\Varid{chrs}){}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+
+\end{Answer}
+
+
+\begin{Exercise} [number=15]
+Write a function
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\Varid{srtString}\mathbin{::}[\mskip1.5mu \Conid{String}\mskip1.5mu]\to [\mskip1.5mu \Conid{String}\mskip1.5mu]{}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+that sorts a list of strings in alphabetical order.
+\end{Exercise}
+
+\begin{Answer}
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\Varid{srtString}\;[\mskip1.5mu \mskip1.5mu]\mathrel{=}[\mskip1.5mu \mskip1.5mu]{}\<[E]%
+\\
+\>[B]{}\Varid{srtString}\;\Varid{xs}\mathrel{=}\Varid{srtString}\;(\Varid{remove}){}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+
+I know I probably could have reversed the definition order to be a little more terse, like this:
+\begin{hscode}\SaveRestoreHook
+\ColumnHook
+\end{hscode}\resethooks
+\end{Answer}
+
+
+
+
+\problem{1.17} Write a function \ensuremath{\Varid{substring}\mathbin{::}\Conid{String}\to \Conid{String}\to \Conid{Bool}} that checks whether \ensuremath{\Varid{str1}} is a substring of \ensuremath{\Varid{str2}}.
+
+The \text{\tt prefix} function was given in Example 1.16:
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{5}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{20}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{28}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[5]{}\Varid{prefix}\mathbin{::}\Conid{String}\to \Conid{String}\to \Conid{Bool}{}\<[E]%
+\\
+\>[5]{}\Varid{prefix}\;[\mskip1.5mu \mskip1.5mu]\;{}\<[20]%
+\>[20]{}\anonymous {}\<[28]%
+\>[28]{}\mathrel{=}\Conid{True}{}\<[E]%
+\\
+\>[5]{}\Varid{prefix}\;\anonymous \;{}\<[20]%
+\>[20]{}[\mskip1.5mu \mskip1.5mu]{}\<[28]%
+\>[28]{}\mathrel{=}\Conid{False}{}\<[E]%
+\\
+\>[5]{}\Varid{prefix}\;(\Varid{x}\mathbin{:}\Varid{xs})\;{}\<[20]%
+\>[20]{}(\Varid{y}\mathbin{:}\Varid{ys}){}\<[28]%
+\>[28]{}\mathrel{=}(\Varid{x}\equiv \Varid{y})\mathrel{\wedge}\Varid{prefix}\;\Varid{xs}\;\Varid{ys}{}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+
+The actual definition for \text{\tt substring} is here:
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{5}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{9}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{29}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[5]{}\Varid{substring}\mathbin{::}\Conid{String}\to \Conid{String}\to \Conid{Bool}{}\<[E]%
+\\
+\>[5]{}\Varid{substring}\;\Varid{str1}\;\Varid{str2}\mathord{@}(\anonymous \mathbin{:}\Varid{restOfStr2}){}\<[E]%
+\\
+\>[5]{}\hsindent{4}{}\<[9]%
+\>[9]{}\mid \Varid{prefix}\;\Varid{str1}\;\Varid{str2}{}\<[29]%
+\>[29]{}\mathrel{=}\Conid{True}{}\<[E]%
+\\
+\>[5]{}\hsindent{4}{}\<[9]%
+\>[9]{}\mid \Varid{otherwise}{}\<[29]%
+\>[29]{}\mathrel{=}\Varid{prefix}\;\Varid{str1}\;\Varid{restOfStr2}{}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+
+
+\problem{1.20} Use \ensuremath{\Varid{map}} to write a function \ensuremath{\Varid{lengths}} that takes a list of lists and returns a list of the corresponding lengths.
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{5}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[5]{}\Varid{lengths}\mathbin{::}[\mskip1.5mu [\mskip1.5mu \Varid{a}\mskip1.5mu]\mskip1.5mu]\to [\mskip1.5mu \Conid{Int}\mskip1.5mu]{}\<[E]%
+\\
+\>[5]{}\Varid{lengths}\mathrel{=}\Varid{map}\;\Varid{length}{}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+
+\problem{1.21} Use \ensuremath{\Varid{map}} to write a function \ensuremath{\Varid{sumLengths}} that takes a list of lists and returns the sum of their lengths.
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{5}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{18}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[5]{}\Varid{sumLengths}\mathbin{::}[\mskip1.5mu [\mskip1.5mu \Varid{a}\mskip1.5mu]\mskip1.5mu]\to \Conid{Int}{}\<[E]%
+\\
+\>[5]{}\Varid{sumLengths}{}\<[18]%
+\>[18]{}\mathrel{=}\Varid{sum}\mathbin{\circ}\Varid{map}\;\Varid{length}{}\<[E]%
+\\
+\>[5]{}\Varid{sumLengths'}{}\<[18]%
+\>[18]{}\mathrel{=}\Varid{sum}\mathbin{\circ}\Varid{lengths}{}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{5}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{14}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{16}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{20}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{27}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{29}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{36}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[5]{}\Varid{factors}\mathbin{::}\Conid{Integer}\to [\mskip1.5mu \Conid{Integer}\mskip1.5mu]{}\<[E]%
+\\
+\>[5]{}\Varid{factors}\;\Varid{n}{}\<[16]%
+\>[16]{}\mid \Varid{n}\mathbin{<}\mathrm{1}{}\<[29]%
+\>[29]{}\mathrel{=}\Varid{error}\;\text{\tt \char34 argument~not~positive\char34}{}\<[E]%
+\\
+\>[16]{}\mid \Varid{n}\equiv \mathrm{1}{}\<[29]%
+\>[29]{}\mathrel{=}[\mskip1.5mu \mskip1.5mu]{}\<[E]%
+\\
+\>[16]{}\mid \Varid{otherwise}{}\<[29]%
+\>[29]{}\mathrel{=}\Varid{p}\mathbin{:}\Varid{factors}\;(\Varid{n}\mathbin{\Varid{`div`}}\Varid{p}){}\<[E]%
+\\
+\>[16]{}\hsindent{4}{}\<[20]%
+\>[20]{}\mathbf{where}\;\Varid{p}\mathrel{=}\Varid{ld}\;\Varid{n}{}\<[E]%
+\\[\blanklineskip]%
+\>[5]{}\Varid{primes0}\mathbin{::}[\mskip1.5mu \Conid{Integer}\mskip1.5mu]{}\<[E]%
+\\
+\>[5]{}\Varid{primes0}\mathrel{=}\Varid{filter}\;\Varid{prime0}\;[\mskip1.5mu \mathrm{2}\mathinner{\ldotp\ldotp}\mskip1.5mu]{}\<[E]%
+\\[\blanklineskip]%
+\>[5]{}\Varid{ldp}\mathbin{::}\Conid{Integer}\to \Conid{Integer}{}\<[E]%
+\\
+\>[5]{}\Varid{ldp}\;\Varid{n}\mathrel{=}\Varid{ldpf}\;\Varid{primes1}\;\Varid{n}{}\<[E]%
+\\[\blanklineskip]%
+\>[5]{}\Varid{ldpf}\mathbin{::}[\mskip1.5mu \Conid{Integer}\mskip1.5mu]\to \Conid{Integer}\to \Conid{Integer}{}\<[E]%
+\\
+\>[5]{}\Varid{ldpf}\;(\Varid{p}\mathbin{:}\Varid{ps})\;\Varid{n}{}\<[20]%
+\>[20]{}\mid \Varid{rem}\;\Varid{n}\;\Varid{p}\equiv \mathrm{0}{}\<[36]%
+\>[36]{}\mathrel{=}\Varid{p}{}\<[E]%
+\\
+\>[20]{}\mid \Varid{p}^\mathrm{2}\mathbin{>}\Varid{n}{}\<[36]%
+\>[36]{}\mathrel{=}\Varid{n}{}\<[E]%
+\\
+\>[20]{}\mid \Varid{otherwise}{}\<[36]%
+\>[36]{}\mathrel{=}\Varid{ldpf}\;\Varid{ps}\;\Varid{n}{}\<[E]%
+\\[\blanklineskip]%
+\>[5]{}\Varid{primes1}\mathbin{::}[\mskip1.5mu \Conid{Integer}\mskip1.5mu]{}\<[E]%
+\\
+\>[5]{}\Varid{primes1}\mathrel{=}\mathrm{2}\mathbin{:}\Varid{filter}\;\Varid{prime}\;[\mskip1.5mu \mathrm{3}\mathinner{\ldotp\ldotp}\mskip1.5mu]{}\<[E]%
+\\[\blanklineskip]%
+\>[5]{}\Varid{prime}\mathbin{::}\Conid{Integer}\to \Conid{Bool}{}\<[E]%
+\\
+\>[5]{}\Varid{prime}\;\Varid{n}{}\<[14]%
+\>[14]{}\mid \Varid{n}\mathbin{<}\mathrm{1}{}\<[27]%
+\>[27]{}\mathrel{=}\Varid{error}\;\text{\tt \char34 not~a~positive~integer\char34}{}\<[E]%
+\\
+\>[14]{}\mid \Varid{n}\equiv \mathrm{1}{}\<[27]%
+\>[27]{}\mathrel{=}\Conid{False}{}\<[E]%
+\\
+\>[14]{}\mid \Varid{otherwise}{}\<[27]%
+\>[27]{}\mathrel{=}\Varid{ldp}\;\Varid{n}\equiv \Varid{n}{}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+
+\problem{1.24} What happens when you modify the defining equation of \text{\tt ldp} to \text{\tt ldp~\char61{}~ldpf~primes1}?
+Nothing. It's just in point-free form.
+
+\chapter{Talking about Mathematical Objects}
+\section*{Making Symbolic Form Explicit} % (fold)
+\label{sec:making_symbolic_form_explicit}
+
+%unfinished
+\begin{Exercise} [number=22]
+  \begin{stmt} \label{stmt:DensityOfRationals}
+    Between every two rational numbers there is a third one.
+  \end{stmt}
+
+  Can you think of an argument showing that \ref{stmt:DensityOfRationals} is true?
+\end{Exercise}
+\begin{Answer}
+  a = i/j
+  b = m/n
+  a and b are rationals
+  i,j,m and n are integers
+  suppose c = (2i - 1) / j
+  suppose d = b + c
+
+  avg of a + b = ((i*n)(j*m))/(j*n)*2
+  a + b / 2 is a rational?
+
+  prove: $\forall{x,y} \in \rationals \colon \quad \exists{z} \in \rationals \suchthat x < z < y$
+\end{Answer}
+
+\begin{Exercise}
+  Give structure trees of the following formulas:
+  \Question $\forall{x} \Bigl( A(x) \implies \bigl(B(x) \implies C(x) \bigr)\Bigr)$
+  
+  \Question $\exists{x} \bigl( A(x) \land B(x) \bigr)$
+   
+  \Question $\exists{x} A(x) \land \exists{x} B(x)$
+\end{Exercise}
+\begin{ExerciseList}[start=1]
+  \Exercise $\forall{x} \Bigl( A(x) \implies \bigl(B(x) \implies C(x) \bigr)\Bigr)$
+  \Answer \Tree [.{$\forall{x} \Bigl( A(x) \implies \bigl(B(x) \implies C(x) \bigr)\Bigr)$}
+                 [.{$A(x) \implies \bigl( B(x) \implies C(x) \bigr)$}
+                  [.{$A(x)$} ]
+                  [.{$B(x) \implies C(x)$} 
+                   {$B(x)$} 
+                   {$C(x)$} 
+                  ]
+                 ]
+                ]
+
+  \Exercise $\exists{x} \bigl( A(x) \land B(x) \bigr)$
+  \Answer \Tree [.{$\exists{x} \suchThat \bigl( A(x) \land B(x) \bigr)$}
+                 [.{$A(x) \land B(x)$}
+                  {$A(x)$}
+                  {$B(x)$} ] ]
+
+  \Exercise $\exists{x} A(x) \land \exists{x} B(x)$
+  \Answer \Tree [.{$\exists{x} A(x) \land \exists{x} B(x)$}
+                 [.{$\exists{x} A(x)$} 
+                  {$A(x)$} ]
+                 [.{$\exists{x} B(x)$} 
+                  {$B(x)$} ] ]
+\end{ExerciseList}
+
+\begin{ExerciseList}
+  Write as formulas with restricted quantifiers:
+  \Exercise $\exists{x} \suchThat \bigl( \exists{y} \suchThat x \in \rationals \land y \in \rationals \land x < y \bigr)$
+  \Answer $\exists{x,y} \in \rationals \suchthat x < y$
+  \Exercise $\forall{x} \bigl( x \in \rationals \implies \exists{y} \suchThat y \in \rationals \land x < y \bigr) $
+  \Answer $\forall{x} \in \reals \left( \exists{y} \in \reals \suchthat x < y \right)$
+  \Exercise $\forall{x} \bigl( x \in \integers \implies \exists{m,n} \left( m \in \naturals \land n \in \naturals \land x = m - n \right) \bigr)$
+  \Answer $\forall{x} \in \integers %
+              \left( %
+                  \exists{m,n} \in \naturals \suchthat x = m - n %
+              \right)$
+\end{ExerciseList}
+
+%unanswered
+\begin{Exercise} [number=31]
+  Translate into formulas, taking care to express the intended meaning:
+
+  \Question The equation $x^2 + 1 = 0$ has a solution.
+
+  \Question A largest natural number does not exist.
+
+  \Question The number 13 is prime (use $d \mid n$ for `$d$ divides $n$').
+
+  \Question The number $n$ is prime.
+
+  \Question There are infinitely many primes.
+
+\end{Exercise}
+
+\begin{Answer} [number=31.1]
+\begin{displaymath}
+\exists{x} \suchThat x = \pm \sqrt{-1}
+\end{displaymath}
+\end{Answer}
+
+
+\begin{Answer} [number=31.2]
+\begin{displaymath}
+\neg \exists{m \in \naturals} \suchthat \forall{n \in \naturals} \colon m \geq n
+\end{displaymath}
+\end{Answer}
+
+\begin{Answer}
+  \begin{displaymath}
+    \nexists{n \in \naturals} \suchthat n > 1 \land n \divides 13
+  \end{displaymath}
+\end{Answer}
+
+
+%unanswered
+\begin{Exercise} [number=32]
+  Translate into formulas [taking care to express the intended meaning]
+  \Question Everyone loved Diana. (Use the expression $L(x,y)$ for: $x$ loved $y$, and the name $d$ for Diana)
+  \Question Diana loved everyone.
+  \Question Man is mortal. (Use $M(x)$ for `$x$ is a man', and $M\prime(x)$ for `$x$ is mortal'.)
+  \Question Some birds do not fly. (Use $B(x)$ for `$x$ is a bird' and $F(x)$ for `$x$ can fly'.)
+\end{Exercise}
+
+%unanswered
+\begin{Exercise} [number=33]
+  Translate into formulas, using appropriate expressions for the predicates:
+  \Question Dogs that bark do not bite.
+  \Question All that glitters is not gold.
+  \Question Friends of Diana's friends are her friends.
+  \Question The limit of $\frac{1}{n}$ as $n$ approaches infinity is zero.
+\end{Exercise}
+
+%unanswered
+\begin{Exercise} [number=34]
+  \Question Everyone loved Diana except Charles.
+  \Question Every man adores at least two women.
+  \Question No man is married to more than one woman.
+\end{Exercise}
+
+%unanswered
+\begin{Exercise} [number=35]
+  \Question The King is not raging.
+  \Question The King is loved by all his subjects. (use $K(x)$ for `$x$ is a King', and $S(x,y)$ for `$x$ is a subject of $y$').
+\end{Exercise}
+
+%unanswered
+\begin{Exercise} [number=36]
+  \Question $\exists{x} \in \rationals \suchThat x^2 = 5$
+  \Question $\forall{n} \in \naturals \colon \exists{m} \in \naturals \suchThat n < m$
+  \Question \[\forall{n} \in \naturals 
+              \nexists{d} \in \naturals \suchThat 
+                 1 < d < (2^n + 1) \land d \divides (2^n + 1)
+            \]
+  \Question $\forall{n} \in \naturals \exists{m} \in \naturals \suchThat \left( n < m \land \forall{p} \in \naturals \left(p \leq n \lor m \leq p \right)\right)$
+  \Question $\forall{\varepsilon} \in \reals^{+} 
+             \Bigl(
+                \exists{n} \in \naturals \suchThat
+                    \forall{m} \in \naturals
+                    \bigl( 
+                        m \geq n \implies 
+                        \left(
+                            \abs{a - a_m} \leq \varepsilon 
+                        \right) 
+                    \bigr) 
+             \Bigr)$
+            ($a$, $a_0$, $a_1$ refer to real numbers)
+\end{Exercise}
+  
+% section making_symbolic_form_explicit (end)
+\section{Abstract Formulas and Concrete Structures}
+
+%unanswered
+\begin{Exercise} [number=37]
+Consider the following formulas:
+
+Are these formulas true or false in the following contexts?
+\end{Exercise}
+
+%unanswered
+\begin{Exercise} [number=38]
+In Exercise 37, delete the first quantifier on $x$ in the five formulas. Determine for which values of $x$ the resulting open formulas are satisfied in each of the structures.
+\end{Exercise}
+\section{Logical Handling of the Quantifiers}
+
+%unanswered
+\begin{Exercise} [number=39]
+    (the propositional equivalent of this was in Exercise 2.19)
+    Argue that $\Phi$ and $\Psi$ are equivalent iff $\Phi \iff \Psi$ is valid.
+\end{Exercise}
+
+%unanswered
+\begin{Exercise} [number=39]
+    For every sentence $\Phi$ in exercise 2.36, consider its negation $\neg\Phi$, and produce a more positive equivalent by working the negation symbol through the quantifiers.
+\end{Exercise}
+
+%unanswered
+\begin{Exercise} [number=46]
+    Does it hold that $\neg\exists{x} \in A \suchthat \Phi(x)$ is equivalent to $\exists{x} \notin A \suchthat \Phi(x)$? If your answer is `yes', give a proof; if `no', then you should show this by giving a simple refutation (an example of formulas and structures where the two formulas have different truth values).
+\end{Exercise}
+
+%unanswered
+\begin{Exercise} [number=47]
+    Is $\exists{x} \notin A \suchthat \Phi(x)$ equivalent to $\exists{x} \in A \suchthat \neg\Phi(x)$? Give a proof if your answer is `yes', and a refutation otherwise.
+\end{Exercise}
+
+%unanswered
+\begin{Exercise} [number=48]
+    Produce the version of Theorem 2.40 that employs restricted quantification. Argue that your version is correct.
+\end{Exercise}
+
+%unanswered
+\begin{Exercise} [number=50]
+    That the sequence $a_0, a_1, a_2, \dots \in \reals$ converges to $a$, i.e., that $lim_{n \to \infty} a_n = a$, means that $forall{\delta} > 0 \colon \exists{n} \suchthat \forall{m \geq n} \colon \abs{a - a_M} < \delta$. Give a possible equivalent for the statement that the sequence $a_0, a_1, a_2, \dots \in \reals$ does not converge.
+\end{Exercise}
+\section{Quantifiers as Procedures}
+\label{sec:Quantifiers_as_procedures}
+
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{8}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\Varid{every},\Varid{some}\mathbin{::}[\mskip1.5mu \Varid{a}\mskip1.5mu]\to (\Varid{a}\to \Conid{Bool})\to \Conid{Bool}{}\<[E]%
+\\
+\>[B]{}\Varid{every}\;{}\<[8]%
+\>[8]{}\Varid{xs}\;\Varid{p}\mathrel{=}\Varid{all}\;\Varid{p}\;\Varid{xs}{}\<[E]%
+\\
+\>[B]{}\Varid{some}\;{}\<[8]%
+\>[8]{}\Varid{xs}\;\Varid{p}\mathrel{=}\Varid{any}\;\Varid{p}\;\Varid{xs}{}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+
+\begin{Exercise} [number=51]
+  Define a function
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\Varid{unique}\mathbin{::}(\Varid{a}\to \Conid{Bool})\to [\mskip1.5mu \Varid{a}\mskip1.5mu]\to \Conid{Bool}{}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+  that gives \text{\tt True} for \text{\tt unique~p~xs} just in case there is exactly
+  one object among \text{\tt xs} that satisfies \text{\tt p}.
+\end{Exercise}
+
+\begin{Answer}
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{5}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{18}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\Varid{unique}\;\Varid{p}\;\Varid{xs}\mathrel{=}\Varid{length}\;(\Varid{filter}\;\Varid{p}\;\Varid{xs})\equiv \mathrm{1}{}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\Varid{none}\mathbin{::}[\mskip1.5mu \Varid{a}\mskip1.5mu]\to (\Varid{a}\to \Conid{Bool})\to \Conid{Bool}{}\<[E]%
+\\
+\>[B]{}\Varid{none}\;\Varid{xs}\;\Varid{p}\mathrel{=}\neg \;(\Varid{some}\;\Varid{xs}\;\Varid{p}){}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\Varid{unique'}\mathbin{::}(\Varid{a}\to \Conid{Bool})\to [\mskip1.5mu \Varid{a}\mskip1.5mu]\to \Conid{Bool}{}\<[E]%
+\\
+\>[B]{}\Varid{unique'}\;\Varid{p}\;[\mskip1.5mu \mskip1.5mu]{}\<[18]%
+\>[18]{}\mathrel{=}\Varid{false}{}\<[E]%
+\\
+\>[B]{}\Varid{unique'}\;\Varid{p}\;(\Varid{x}\mathbin{:}\Varid{xs}){}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\mid \Varid{p}\;\Varid{x}{}\<[18]%
+\>[18]{}\mathrel{=}\Varid{none}\;\Varid{xs}\;\Varid{p}{}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\mid \Varid{otherwise}{}\<[18]%
+\>[18]{}\mathrel{=}\Varid{unique'}\;\Varid{p}\;\Varid{xs}{}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+\end{Answer}
+
+\begin{Exercise}
+Define a function
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\Varid{parity}\mathbin{::}[\mskip1.5mu \Conid{Bool}\mskip1.5mu]\to \Conid{Bool}{}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+that gives \text{\tt True} for \text{\tt parity~xs} just in case an even number of the \text{\tt xs}s equals \text{\tt True}.
+\end{Exercise}
+
+\begin{Answer}
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{3}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\Varid{parity}\mathrel{=}\Varid{reduce}\;(\not\equiv )\;\Conid{True}{}\<[E]%
+\\
+\>[B]{}\hsindent{3}{}\<[3]%
+\>[3]{}\mathbf{where}\;\Varid{reduce}\mathrel{=}\Varid{foldl}{}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+An empty list has 0 \text{\tt True}s. Since 0 is an even number, the ``initial'' answer
+(or ``base case''?) should be \text{\tt True}.
+
+I use \text{\tt reduce} because I'm not sure whether \text{\tt foldl} or \text{\tt foldr} is more
+appropriate here.
+\end{Answer}
+
+\begin{Exercise}
+Define a function
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\Varid{evenNR}\mathbin{::}(\Varid{a}\to \Conid{Bool})\to [\mskip1.5mu \Varid{a}\mskip1.5mu]\to \Conid{Bool}{}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+that gives \text{\tt True} for \text{\tt evenNR~p~xs} just in case an even number of the \text{\tt xs}s have property \text{\tt p}. (Use the \text{\tt parity} function from the previous exercise.)
+\end{Exercise}
+
+\begin{Answer}
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\Varid{evenNR}\;\Varid{p}\mathrel{=}\Varid{parity}\mathbin{\circ}\Varid{map}\;\Varid{p}{}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+\end{Answer}
+
+\chapter{The Use of Logic: Proof}
+\section{Proof Style}
+\section{Proof Recipes}
+\section{Rules for the Connectives}
+
+\begin{Exercise} [number=2]
+  Apply both implication rules to prove $P \implies R$ from the givens $P \implies Q$, $P \implies (Q \implies R)$.
+\end{Exercise}
+\begin{Answer}
+  \begin{structured_derivation}
+    \task{Prove that $P \implies R$ when:}
+    \assumption[FACT:P->Q]{$P \implies Q$}
+    \assumption[FACT:P->Q->R]{$P \implies (Q \implies R)$}
+    \isProvedBy{let us assume that $P$ is true. If we can then also show that $R$ is true, then the implication holds.}
+    \begin{nested_derivation}
+      \task{Prove that $Q \implies R$ is true when:}
+      \assumption[FACT:P]{$P$ is true}
+      \observation [FACT:Q->R]
+        {\term{modus ponens} with \ref{FACT:P->Q->R} and \ref{FACT:P} }
+        {$Q \implies R$}
+      \observation[FACT:Q]
+        {\term{modus ponens} with \ref{FACT:P->Q} and \ref{FACT:P} }
+        {$Q$}
+      \observation[FACT:R]
+        {\term{modus ponens} with \ref{FACT:Q} and \ref{FACT:Q->R} }
+        {$R$}
+    \end{nested_derivation}
+  \end{structured_derivation}
+\end{Answer}
+
+\begin{Exercise} [number=4]
+  \noindent
+  Assume that $n,m \in \naturals$. \\
+  Show: ($m$ is odd $\land$ $n$ is odd) $\implies$ $m + n$ is even.
+\end{Exercise}
+\begin{Answer}  
+  \begin{structured_derivation}
+    \task{Prove that ($m$ is odd $\land$ $n$ is odd) $\implies m + n$ is even when:}
+    \task{Prove that $m + n$ is necessarily even if $m$ and $n$ are both odd.}
+    \assumption*{$n \in \naturals$}
+    \assumption*{$m \in \naturals$}
+    \isProvedBy{If the antecedent isn't true, then the implication is \term{vacuously true}. So in order to prove the implication let's assume the antecedent is true and then demonstrate that the consequent is true.}
+    \begin{nested_derivation}
+      \task{Prove that $m + n$ is even when:}
+      \assumption{$m$ is odd}
+      \assumption{$n$ is odd}
+      \observation
+        {definition of odd-ness}
+        {$\exists{x} \in \integers \suchthat m = 2x + 1$}
+      \observation
+        {definition of odd-ness}
+        {$\exists{y} \in \integers \suchthat n = 2y + 1$}
+      \isProvedBy{formalizing the definition of ``even'' to make it amenable to proof}
+      \begin{nested_derivation}
+        \task{Prove that $\exists{i} \in \integers \suchthat m + n = 2i $}
+        $m + n$\\
+        $(2x + 1) + (2y + 1)$\\
+        $2x + 2y + 2$\\
+        $2(x + y + 1)$\\
+        % (x + y + 1) is a witness for i?
+        \begin{nested_derivation}
+          \task{Prove that $x + y + 1$ is an integer, and is therefore a witness of i (??)}
+        \end{nested_derivation}
+      \end{nested_derivation}
+    \end{nested_derivation}
+  \end{structured_derivation}
+\end{Answer}
+
+\begin{Exercise} [number=5]
+  Show:
+  \Question{From $P \iff Q$ it follows that $(P \implies R) \iff (Q \implies R)$,}
+  \Question{From $P \iff Q$ it follows that $(R \implies P) \iff (R \implies Q)$.}
+\end{Exercise}
+
+\begin{Answer} [number=5.1]
+  \begin{structured_derivation}
+    \task{Prove that $(P \implies R) \iff (Q \implies R)$ when:}
+    \assumption*{$P \iff Q$}
+    \isProvedBy{show that each implies the other}
+    \begin{nested_derivation}
+      \task{Prove $Q \implies R$ when:}
+      \assumption*{$P \implies R$}
+      \isProvedBy{deduction rule}
+      \begin{nested_derivation}
+        \task{Prove $R$ when:}
+        \assumption*{$Q$}
+        \observation*
+          {\term{modus ponens}}
+          {$P$}
+        \observation*
+          {\term{modus ponens}}
+          {$R$}
+        \qed
+      \end{nested_derivation}
+    \end{nested_derivation}
+    
+    \begin{nested_derivation}
+      \task{Prove $P \implies R$ when:}
+      \assumption*{$Q \implies R$}
+      \isProvedBy{deduction rule}
+      \begin{nested_derivation}
+        \task{Prove $R$ when:}
+        \assumption*{$P$}
+        \observation*
+          {\term{modus ponens}}
+          {$Q$}
+        \observation*
+          {\term{modus ponens}}
+          {$R$}
+        \qed
+      \end{nested_derivation}
+    \end{nested_derivation}
+  \end{structured_derivation}
+\end{Answer}
+
+\begin{Answer} [number=5.2]
+  \begin{structured_derivation}
+    \task{Prove $(R \implies P) \iff (R \implies Q)$ when:}
+    \assumption[PiffQ]{$P \iff Q$}
+    \isProvedBy{show that each implies the other to demonstrate equivalence}
+    \begin{nested_derivation}
+      \task{Prove that $R \implies P$ when:}
+      \assumption*{$R \implies Q$}
+      \isProvedBy{deduction rule}
+      \begin{nested_derivation}
+        \task{Prove that $P$ when:}
+        \assumption*{$R$}
+        \observation*
+          {\term{modus ponens}}
+          {$Q$}
+        \observation*
+          {\term{modus ponens} / Elimination Rule}
+          {$P$}
+      \end{nested_derivation}
+    \end{nested_derivation}
+    \begin{nested_derivation}
+      \task{Prove that $R \implies Q$ when:}
+      \assumption*{$R \implies P$}
+      \isProvedBy{deduction rule}
+      \begin{nested_derivation}
+        \task{Prove $Q$ when:}
+        \assumption*{$R$}
+        \observation*
+          {\term{modus ponens}}
+          {$P$}
+        \observation*
+          {\term{modus ponens}}
+          {$Q$}
+      \end{nested_derivation}
+    \end{nested_derivation}
+  \end{structured_derivation}
+\end{Answer}
+
+\begin{Exercise} [number=7]
+  Produce proofs for:
+  \Question Given: $P \implies Q$. To show: $\neg{Q} \implies \neg{P}$,
+  \Question Given: $P \iff Q$. To show: $\neg{P} \iff \neg{Q}$.
+\end{Exercise}
+
+\begin{Answer} [number=7.1]
+  \begin{structured_derivation}
+    \task{Prove that $\neg{Q} \implies \neg{P}$ when:}
+    \assumption{$P \implies Q$}
+    \isProvedBy{deduction rule}
+    \begin{nested_derivation}
+      \task{Prove $\neg{P}$ when:}
+      \assumption{$\neg{Q}$}
+      \isProvedBy{assume the opposite and then derive $\bot$}
+      \begin{nested_derivation}
+        \task{Prove ?? \#\# Q when:}
+        \assumption{$P$}
+        \observation
+          {\term{modus ponens}}
+          {$Q$}
+        \observation
+          {$Q$ and $\neg{Q}$}
+          {$\bot$}
+      \end{nested_derivation}
+      \andbutso{$\neg{P}$}      
+    \end{nested_derivation}
+  \end{structured_derivation}
+\end{Answer}
+
+\begin{Answer} [number=7.2]
+  \begin{structured_derivation}
+    \task{Prove that $\neg{P} \iff \neg{Q}$ when:}
+    \assumption{$P \iff Q$}
+    \isProvedBy{division into cases. Show that the antecedent/consequent relationship runs both ways to prove equivalence}
+    \begin{nested_derivation}
+      \task{Prove that $\neg{P} \implies \neg{Q}$}
+      \isProvedBy{deduction rule}
+      \begin{nested_derivation}
+        \task{Prove $\neg{Q}$ provided that:}
+        \assumption*{$\neg{P}$}
+        \isProvedBy{assume the opposite and then derive $\bot$}
+        \begin{nested_derivation}
+          \task{Prove $P$ when:}
+          \assumption*{$Q$}
+          \observation*
+            {\term{modus ponens} with root assumption}
+            {$P$}
+          contradiction!
+        \end{nested_derivation}
+        \andbutso{$\neg{Q}$}
+      \end{nested_derivation}
+    \end{nested_derivation}
+    
+    \begin{nested_derivation}
+      \task{Prove that $\neg{Q} \implies \neg{P}$}
+      \isProvedBy{deduction rule}
+      \begin{nested_derivation}
+        \task{Prove $\neg{P}$ when:}
+        \assumption*{$\neg{Q}$}
+        \isProvedBy{assume the opposite and then derive something false}
+        \begin{nested_derivation}
+          \task{Prove $Q$ supposing:}
+          \assumption*{$P$}
+          \observation*
+            {\term{modus ponens} with root assumption}
+            {$Q$}
+        \end{nested_derivation}
+        \andbutso{$\neg{P}$}
+      \end{nested_derivation}
+    \end{nested_derivation}
+  \end{structured_derivation}
+\end{Answer}
+
+
+
+\begin{Exercise} [number=9, difficulty=1]
+  Show that from $(P \implies Q) \implies P$ it follows that $P$.
+  
+  \ExeText Hint: Apply Proof by Contradiction. (The implication rules do not suffice for this admittedly exotic example.)
+\end{Exercise}
+
+\begin{Answer}
+  \begin{structured_derivation}
+    \task{Prove $P$ when:}
+    \assumption*{$(P \implies Q) \implies P$}
+    \isProvedBy{contradiction}
+    \begin{nested_derivation}
+      \task{Prove $\bot$ when:}
+      \assumption*{$\neg{P}$}
+      \observation
+        {the antecedent is false so the implication is vacuously true}
+        {$P \implies Q$}
+      \observation
+        {\term{modus ponens}}
+        {$P$}
+      \observation
+        {law of the excluded middle; $P \land \neg{P}$}
+        {$\bot$}      
+    \end{nested_derivation}
+  \end{structured_derivation}
+\end{Answer}
+
+\begin{theorem}
+  From $P \lor Q$, $\neg{P}$ it follows that $Q$.
+\end{theorem}
+
+\begin{Exercise} [number=11]
+  Assume that $A$, $B$, $C$, and $D$ are statements.
+  \Question From the given $A \implies (B \lor C)$ and $B \implies \neg{A}$, derive that $A \implies C$.
+  \Question From the given $(A \lor B) \implies (C \lor D)$, $C \implies A$, and $B \implies \neg{A}$, derive that $B \implies D$.
+\end{Exercise}
+
+\begin{Answer} [number=11.1]
+  \begin{structured_derivation}
+    \task{Derive $A \implies C$ when:}
+    \assumption*{$B \implies \neg{A}$}
+    \assumption*{$A \implies (B \lor C)$}
+    \isProvedBy{deduction rule}
+    \begin{nested_derivation}
+      \task{Prove $C$ when:}
+      \assumption*{$A$}
+      \observation*
+        {\term{modus ponens}}
+        {$B \lor C$}
+      \introbserv*{show that $B$ cannot be true}
+      \begin{nested_derivation}
+        \task{Derive $\bot$ when:}
+        \assumption*{$B$}
+        \observation*{\term{modus ponens}}
+          {$\neg{A}$}
+        \observation*{law of the excluded middle; $A \land \neg{A}$}
+          {$\bot$}
+      \end{nested_derivation}
+      \andbutso{$\neg{B}$}
+      \observation*
+        {? by example 3.10}
+        {$C$}
+    \end{nested_derivation}
+  \end{structured_derivation}
+\end{Answer}
+
+\begin{Answer} [number=11.2]
+  \begin{structured_derivation}
+    \task{Derive that $B \implies D$ when:}
+    \assumption{$A \lor B \implies C \lor D$}
+    \assumption{$C \implies A$}
+    \assumption{$B \implies \neg{A}$}
+    \isProvedBy{deduction rule}
+    \begin{nested_derivation}
+      \task{Prove $D$, assuming:}
+      \assumption*{$B$}
+      \observation
+        {A disjunction follows from each of its disjuncts.}
+        {$A \lor B$}
+      \observation
+        {\term{modus ponens}}
+        {$C \lor D$}
+      \observation
+        {\term{modus ponens}}
+        {$\neg{A}$}
+      \observation
+        {\term{modus tollens}}
+        {$\neg{C}$}
+      \observation
+        {? by 3.10}
+        {$D$}
+    \end{nested_derivation}
+  \end{structured_derivation}
+\end{Answer}
+
+\begin{Exercise} [number=15]
+  Show that for any $n \in \naturals$, division of $n^2$ by 4 gives a remainder 0 or 1.
+\end{Exercise}
+
+\begin{Answer}
+  
+  % I don't want the supertext of a number to also be a number.
+  \renewcommand{\thefootnote}{\fnsymbol{footnote}}
+  
+  % TODO also kinda like problem # 4, where I'm not sure how to formally discuss divisibility concisely.
+  
+  \begin{structured_derivation}
+    \task{Prove that $\frac{n^2}{4}$ gives 0 or 1 as a remainder when:}
+    \assumption*{$n \in \naturals$}
+    \observation*
+      {simple experimentation}
+      {$9 \equiv 1 \imod{4}$}
+    \observation*
+      {simple experimentation}
+      {$16 \equiv 0 \imod{4}$}
+    \observation*
+      {simple experimentation}
+      {$25 \equiv 1 \imod{4}$}
+    \isProvedBy{division into cases; every natural number is either even or odd}
+    \begin{nested_derivation}
+      \task{Prove that $\frac{n^2}{4}$ gives 0\footnotemark\ as a remainder when:}
+      \assumption*{$n$ is even}
+      \footnotetext{yes, yes, it's more proper to define the task as aiming for 0 \emph{or} 1, but this makes the \emph{intent} of the goal more clear. Besides, proving one of the conjuncts makes the entire expression true. \emph{boo-yah!}}
+      \observation*
+        {definition of what it means for a number to be even}
+        {$\exists{k} \in \integers \suchthat n = 2k$}
+      \introbserv*{figure out $n^2$ in terms of $k$}
+      \begin{nested_derivation}
+        \task{$n^2$}
+        \justification[=]{substitute based on observation}
+        \dijk{$(2k)^2$}
+        \justification[=]{?}
+        \dijk{$4 k^2$}
+      \end{nested_derivation}
+      \andbutso{$n^2 = 4 k^2$}
+      now prove that 4 divides 4k\^{}2.\\
+      Then prove that 4 nearly divides 4k\^{}2 + 4k + 1
+    \end{nested_derivation}
+  \end{structured_derivation}  
+\end{Answer}
+
+%unanswered
+\begin{Exercise} [number=17]
+  Prove the remaining items of THEOREM 2.10 (p. 45). To prove $\Phi \equiv \Psi$ means [something similar to proving set equivalence].
+\end{Exercise}
+  
+\section{Rules for the Quantifiers}
+
+\begin{Exercise}[number=18]
+  Show, using $\forall$-introduction and Deduction Rule: if from $\Gamma$, $P(c)$ it follows that $Q(c)$ (where $c$ satisfies $P$, but is otherwise ``arbitrary''), then from $\Gamma$ it follows that $\forall{x} \colon P(x) \implies Q(x)$.
+\end{Exercise}
+
+\begin{Answer} [number=18]
+  \begin{structured_derivation}
+    \task{Prove $\Gamma \implies \bigl( \forall{x} \colon P(x) \implies Q(x) \bigr)$ provided that:}
+    \assumption{$\bigl( P(c) \land \Gamma \bigr) \implies Q(c)$}
+    \isProvedBy{deduction rule; suppose $\Gamma$ (because it's the antecedent)}
+    \begin{nested_derivation}
+      \task{Prove $\forall{x} \colon P(x) \implies Q(x)$ when:}
+      \assumption{$\Gamma$}
+      \isProvedBy{deduction rule}
+      \begin{nested_derivation}
+        \task{Prove $Q(x)$ when:}
+        \assumption{$\exists{x} \suchthat P(x)$}
+        \observation
+          {A conjunction follows from its two conjuncts taken together.}
+          { $\Gamma \land P(x)$ }
+        \observation
+          {\term{modus ponens}}
+          { $Q(x)$ }
+      \end{nested_derivation}
+      \andbutso{$\forall{x} \colon P(x) \implies Q(x)$}
+    \end{nested_derivation}
+  \end{structured_derivation}
+\end{Answer}
+\section{Summary of the Proof Recipes}
+\section{Some Strategic Guidelines}
+
+%unanswered
+\begin{Exercise} [number=25]
+    Show:
+    \Question from $\forall{x}\bigl(P(x) \implies Q(x)\bigr)$, $\forall{x} \colon P(x)$ it follows that $\forall{x} \colon Q(x)$,
+    \Question from $\exists{x}\bigl(P(x) \implies Q(x)\bigr)$, $\forall{x} \colon P(x)$ it follows that $\exists{x} \suchthat Q(x)$.
+\end{Exercise}
+
+\begin{Answer} [number=25.1]
+    \begin{structured_derivation}
+        \task{Prove that $\forall{x} \colon Q(x)$ when:}
+        \assumption*{$\forall{x} \colon P(x) \implies Q(x)$}
+        \assumption*{$\forall{x} \colon P(x)$}
+        \isProvedBy{??}
+        \begin{nested_derivation}
+            basically modus ponens but with quantifiers. 
+        \end{nested_derivation}
+    \end{structured_derivation}
+\end{Answer}
+\section{Reasoning and Computation with Primes}
+
+%unanswered
+\begin{Exercise} [number=34]
+    \ExePart Let $A = \Set{4n + 3}{n \in \naturals}$. Show that $A$ contains infinitely many prime numbers.
+    
+    \ExeText Hint: any prime > 2 is odd, hence of the form $4n + 1$ or $4n + 3$. Assume that there are only finietly many primes of the form $4n + 3$, say $p_1, \dots p_m$. Consider the number $N = 4p_1 \dots p_m - 1 = 4(p_1 \dots p_m - 1) + 3$. Argue that $N$ must contain a factor $4q + 3$, using the fact that $(4a + 1)(4b + 1)$ is of the form $4c + 1$.
+    
+    \ExePart Use \text{\tt filter~prime~\char91{}~4\char42{}n~\char43{}~3~\char124{}~n~\char60{}\char45{}~\char91{}0\char46{}\char46{}\char93{}~\char93{}} to generate the primes of this form.
+\end{Exercise}
+
+%unanswered
+\begin{Exercise} [number=36]
+    It is not very difficult to show that if $n$ is composite, $M_n = 2^n - 1$ is composite too. Show this.
+    \ExeText Hint: Assume that $n = ab$ and probe that $xy = 2^n - 1$ for the numbers $x = 2^b - 1$ and $y = 1 + 2^b + 2^{2b} + \cdots + 2^{(a-1)b}$.
+\end{Exercise}
+
+%unanswered
+\begin{Exercise} [number=38]
+A slightly faster way to generate the primes is by starting out from the odd numbers. The stepping and marking will work as before, for you count $k$ positions in the odd numbers starting from any odd number $a = 2n + 1$, you will move on o number $(2n + 1) + 2k$, and if $a$ is a multiile of $k$, then so is $a + 2k$. Implement a function \text{\tt fasterprimes~\char58{}\char58{}~\char91{}Integer\char93{}} using this idea. The odd natural numbers, staring from 3, can be generated as follows:
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\Varid{oddsFrom3}\mathbin{::}[\mskip1.5mu \Conid{Integer}\mskip1.5mu]{}\<[E]%
+\\
+\>[B]{}\Varid{oddsFrom3}\mathrel{=}\mathrm{3}\mathbin{:}\Varid{map}\;(\mathbin{+}\mathrm{2})\;\Varid{oddsFrom3}{}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+\end{Exercise}
+
+%unanswered
+\begin{Exercise} [number=39]
+Write a Haskell program to refute the following statement about prime numbers: ``if $p_1, \dots, p_k$ are all the primes $< n$, then $(p_1 \times \cdots \times p_k) + 1$ is a prime.''
+\end{Exercise}
+
+%unanswered
+\begin{Exercise} [number=41]
+How would you go about yourself to prove the fact Euclid proved? (if $2^n - 1$ is prime, then $2^{n-1}(2^n - 1)$ is perfect). Here is a hint: if $2^n - 1$ is prime, then the proper divisors of $2^{n-1}(2^n - 1)$ are
+\begin{displaymath}
+1, 2, 2^2, \dots, 2^{n-1}, 2^n - 1, 2(2^n - 1), 2^2(2^n - 1), \dots, 2^{n-2}(2^n - 1).
+\end{displaymath}
+\end{Exercise}
+
+%unanswered
+\begin{Exercise} [number=42]
+
+\end{Exercise}
+
+%unanswered
+\begin{Exercise} [number=43]
+
+\end{Exercise}
+
+
+
+\chapter{Sets, Types and Lists}
+\section{Let's Talk About Sets}
+
+\begin{theorem}
+  \label{THM:sets:RAT}
+  For all sets $A$, $B$, and $C$, we have that:
+  \begin{enumerate}
+    \item ``reflexivity'': $A \subseteq A$ 
+    \item ``antisymmetry'': $A \subseteq B \land B \subseteq A \implies A = B$ 
+    \item ``transitivity'': $A \subseteq B \land B \subseteq C \implies A \subseteq C$ 
+  \end{enumerate}
+\end{theorem}
+
+\begin{Exercise} [number=2]
+  Show that the superset relation also has the properties of Theorem \ref{THM:sets:RAT}. I.e., show that~$\supseteq$ is reflexive, antisymmetric and transitive.
+\end{Exercise}
+
+\begin{Answer}
+  $A \subseteq B \equiv B \supseteq A$
+\end{Answer}
+
+%unfinished
+\begin{Exercise} [number=4]
+  Show that $\bigl\{ \{ 1, 2 \}, \{ 0 \}, \{ 2, 1 \} \bigr\}  =  \bigl\{ \{ 0 \}, \{ 1, 2 \} \bigr\}$.
+\end{Exercise}
+
+\begin{Answer}
+  \begin{structured_derivation}
+    \task{Prove that $\bigl\{ \{ 1, 2 \}, \{ 0 \}, \{ 2, 1 \} \bigr\}  =  \bigl\{ \{ 0 \}, \{ 1, 2 \} \bigr\}$}
+    \observation*
+      {order and repetition in this notation are irrelevant}
+      { $\{ 1, 2 \} \equiv \{ 2, 1 \} $ }
+    \isProvedBy{demonstrating that each is a subset of the other}
+    \begin{nested_derivation}
+      \task{Prove that $\bigl\{ \{ 1, 2 \}, \{ 0 \}, \{ 2, 1 \} \bigr\} \subseteq \bigl\{ \{ 0 \}, \{ 1, 2 \} \bigr\}$.}
+      
+    \end{nested_derivation}
+    \begin{nested_derivation}
+      \task{Prove that $\bigl\{ \{ 1, 2 \}, \{ 0 \}, \{ 2, 1 \} \bigr\} \supseteq \bigl\{ \{ 0 \}, \{ 1, 2 \} \bigr\}$.}
+    \end{nested_derivation}
+  \end{structured_derivation}
+\end{Answer}
+
+%unanswered
+\begin{Exercise} [number=7, difficulty=1]
+  Assume that $A$ is a set of sets. Show that $\{ x \in A \suchthat x \notin x \} \notin A$.
+\end{Exercise}
+
+%answer as something to do with principle of extension. I think. Like,
+%{x in A} = A, but not {x in A} in A. Well, UNLESS A can contain
+%itself. If it can, then there exists x in A such that x = A. ...
+\section{Paradoxes, Types and Type Classes}
+
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{10}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{23}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\Varid{funny}\;\Varid{x}{}\<[10]%
+\>[10]{}\mid \Varid{halts}\;\Varid{x}\;\Varid{x}{}\<[23]%
+\>[23]{}\mathrel{=}\bot {}\<[E]%
+\\
+\>[10]{}\mid \Varid{otherwise}{}\<[23]%
+\>[23]{}\mathrel{=}\Conid{True}{}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+So, does \text{\tt funny~funny} diverge or halt? IT'S A PARADOX!!
+
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{3}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{14}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{27}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\Varid{halts}\;\Varid{f}\;\Varid{x}\mathrel{=}\Varid{f}\not\equiv \Varid{g}{}\<[E]%
+\\
+\>[B]{}\hsindent{3}{}\<[3]%
+\>[3]{}\mathbf{where}\;\Varid{g}\;\Varid{y}{}\<[14]%
+\>[14]{}\mid \Varid{y}\equiv \Varid{x}{}\<[27]%
+\>[27]{}\mathrel{=}\bot {}\<[E]%
+\\
+\>[14]{}\mid \Varid{otherwise}{}\<[27]%
+\>[27]{}\mathrel{=}\Varid{f}\;\Varid{y}{}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{12}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{22}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\Varid{collatz}\mathbin{::}\Conid{Integer}\to [\mskip1.5mu \Conid{Integer}\mskip1.5mu]{}\<[E]%
+\\
+\>[B]{}\Varid{collatz}\;\Varid{n}{}\<[12]%
+\>[12]{}\mid \Varid{n}\mathbin{<}\mathrm{1}{}\<[22]%
+\>[22]{}\mathrel{=}\Varid{error}\;\text{\tt \char34 argument~not~positive\char34}{}\<[E]%
+\\
+\>[12]{}\mid \Varid{n}\equiv \mathrm{1}{}\<[22]%
+\>[22]{}\mathrel{=}[\mskip1.5mu \mathrm{1}\mskip1.5mu]{}\<[E]%
+\\
+\>[12]{}\mid \Varid{even}\;\Varid{n}{}\<[22]%
+\>[22]{}\mathrel{=}\Varid{n}\mathbin{:}\Varid{collatz}\;(\Varid{n}\mathbin{\Varid{`div`}}\mathrm{2}){}\<[E]%
+\\
+\>[12]{}\mid \Varid{odd}\;\Varid{n}{}\<[22]%
+\>[22]{}\mathrel{=}\Varid{n}\mathbin{:}\Varid{collatz}\;(\mathrm{3}\mathbin{*}\Varid{n}\mathbin{+}\mathrm{1}){}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+
+\begin{Exercise} [number=8]
+  Explain the following error message:
+  
+  \begin{tabbing}\tt
+~~~~~Prelude\char62{}~elem~1~1\\
+\tt ~~~~~ERROR\char58{}~\char91{}a\char93{}~is~not~an~instance~of~class~\char34{}Num\char34{}\\
+\tt ~~~~~Prelude\char62{}
+\end{tabbing}
+\end{Exercise}
+
+\begin{Answer}
+  An intuitive explanation is that you cannot test anything for 
+  being a ``member'' of a number.
+
+  The function \ensuremath{\Varid{elem}} has type \ensuremath{\Conid{Eq}\;\Varid{a}\Rightarrow \Varid{a}\to [\mskip1.5mu \Varid{a}\mskip1.5mu]\to \Conid{Bool}}.
+  However, \text{\tt \char40{}elem~1\char41{}~\char58{}\char58{}~Num~a~\char61{}\char62{}~\char91{}a\char93{}~\char45{}\char62{}~Bool}. This is because
+  when \text{\tt elem} is partially applied to 1, Haskell determines that
+  \text{\tt elem} will be operating on some \term{instance} of the \text{\tt Num}
+  typeclass\footnote{however, since 1 can be an \text{\tt Int} \emph{or} an \text{\tt Integer}, it must stick with the more general \text{\tt Num}}. 
+  As such, the type changes. The function produced by applying
+  \text{\tt elem} to \text{\tt 1} can only be sensibly applied to a list of \text{\tt Num}s.
+  What the function received was \emph{not} a list of some type \ensuremath{\Varid{a}} such
+  that \ensuremath{\Varid{a}} was an instance of \text{\tt Num}, but rather another \text{\tt 1}. I think that
+  the error is, in effect, saying that ``my expected parameter is not compatible
+  with what you've supplied me''.
+  
+\end{Answer}
+\section{Special Sets}
+
+%unfinished
+\begin{Exercise} [number=10]
+  Show:
+  \Question $\{ a \} = \{ b \} \textrm{ iff } a = b$,
+  \Question $\{ a_1, a_2 \} = \{ b_1, b_2 \} \textrm{ iff: } a_1 = b_1 \land a_2 = b_2 \textrm{, or } a_1 = b_2 \land a_2 = b_1$.
+
+  NOTE: these \emph{can} be formally answered!
+\end{Exercise}
+
+\begin{Answer} [number=10.1]
+  Because $\{ a \}$ and $\{ b \}$ are both \term{singletons}, in order
+  to test if the two sets are the same (by Extensionality and such) we
+  only need to compare the element from one to the element from the
+  other.
+\end{Answer}
+
+\begin{Exercise} [number=11]
+  Explain that $\emptyset \neq \{\emptyset\}$. And that $\lbrace
+  \emptyset \rbrace \neq \bigl\{\{ \emptyset \}\bigr\}$.
+\end{Exercise}
+
+\begin{Answer}
+  First, remember the \term{Principle of Extensionality}: that a set
+  is completely defined by its elements, and as such is equal to
+  another set with the same elements.
+	
+  I'll start with showing why $\emptyset \neq \{\emptyset\}$. What are
+  the contents of $\emptyset$? Nothing---which can also be seen in the
+  fact that $\cardinality{\emptyset} = 0$.  In contrast,
+  $\cardinality{ \{ \emptyset \} } = 1$ because it contains one
+  element: the empty set!
+
+  The same reasoning can be applied to the other two, because the
+  first pair happen to be the respective contents of the second
+  pair. Since sets are totally defined by their elements, and we've
+  shown that the elements are not equal, then the respective enclosing
+  sets are also not equal.
+\end{Answer}
+\section{Algebra of Sets}
+
+\begin{Exercise} [number=13]
+  What are the types of the set difference operator $\setminus$ and of the inclusion operator $\subseteq$?
+\end{Exercise}
+
+\begin{Answer}
+
+  \\$\subseteq$ :: $s \rightarrow s \rightarrow t$\\
+  $\setminus$ :: $s \rightarrow s \rightarrow s$
+\end{Answer}
+
+
+\begin{Exercise} [number=14]
+  Give the types of the following expressions:
+  \Question $x \in \Set{x}{E(x)}$.
+  \Question $\Set{x}{E(x)}$.
+  \Question $(A \intersect B) \subseteq C$.
+  \Question $(A \union B) \intersect C$.
+  \Question $\forall{x} \colon x \in A \implies x \in B$.
+  \Question $A=B$.
+  \Question $a \in A \iff a \in B$.
+\end{Exercise}
+
+\begin{Answer}
+$t$, $s$, $t$, $s$, $t$, $t$, $t$
+\end{Answer}
+
+%unfinished
+%TODO leave the set notation and dive into logical quantifiers and
+%then do Dijkstra calculation
+\begin{Exercise} [number=17]
+  $A$, $B$ and $C$ are sets. Show:
+  \Question $A \nsubseteq B \iff A - B \neq \emptyset$.
+  \Question $A \intersect B = A - (A - B)$.
+\end{Exercise}
+
+\begin{Answer} [number=17.1]
+  \begin{structured_derivation}
+    \task{Show that $A \nsubseteq B$ when:}
+    \assumption{$A - B \neq \emptyset$}
+    \task{$A - B \neq \emptyset$}
+    \justification[\iff]{Rewrite the set difference notation (?)}
+    \dijk{$\Set{x}{x \in A \land x \notin B} \neq \emptyset$}
+    \justification[\iff]{Rewrite the \dots}
+    \dijk{$\exists{x \in A} \suchThat x \notin B$}
+    \observation{$A-B$ can be rewritten as:}{}    
+  \end{structured_derivation}
+\end{Answer}
+
+
+\begin{Answer} [number=17.2]
+  \begin{structured_derivation}
+    \task{Prove that $A \intersect B = A - (A-B)$}
+    \isProvedBy{Demonstrate that the RHS is a subset of the LHS and vice-versa}
+    \begin{nested_derivation}
+      \task{Prove that $A \intersect B \subseteq A - (A-B)$}
+      \isProvedBy{??}
+      \begin{nested_derivation}
+        \task{Prove that $x = y$ when:}
+        \assumption{$\exists{x} \suchThat x \in (A \intersect B)$}
+        \observation{definition of subset \& intersection of
+          sets}{$\exists{x} \suchThat x \in A \land x \in B$}
+        \assumption{$\exists{y} \suchThat y \in (A - (A-B))$}
+        \observation{??}{$\exists{y \in A} \suchThat y \notin A-B$}
+        
+        
+      \end{nested_derivation}
+    \end{nested_derivation}
+    \begin{nested_derivation}
+      \task{Prove that $A - (A - B) \subseteq A \intersect B$}    
+    \end{nested_derivation}
+  \end{structured_derivation}
+\end{Answer}
+
+%TODO missed steps on commutativity
+\begin{Exercise} [number=19]
+  Express $(A \union B) \intersect (C \union D)$ as the union of four intersections.
+\end{Exercise}
+
+\begin{Answer}
+  \begin{structured_derivation}
+    \task{$(A \union B) \intersect (C \union D)$}
+    \justification[\equiv]{distributivity}
+    \dijk{$\bigl(A \intersect (C \union D)\bigr) \union \bigl(B
+      \intersect (C \union D)\bigr)$}
+    \justification[\equiv]{distributivity}
+    \dijk{$\bigl( (A \intersect C) \union (A \intersect D) \bigr)
+      \union \bigl(B \intersect (C \union D)\bigr)$}
+    \justification[\equiv]{distributivity}
+    \dijk{$\bigl( (A \intersect C) \union (A \intersect D) \bigr)
+      \union \bigl( (B \intersect C) \union (B \intersect D) \bigr)$}
+    \justification[\equiv]{trivial rewrite}
+    \dijk{$\cumulUnion \bigl( (A \intersect C), (A \intersect D), (B
+        \intersect C), (B \intersect D) \bigr)$}
+  \end{structured_derivation}
+\end{Answer}
+
+%unanswered
+\begin{Exercise} [number=21]
+  Show that $A \xor B = (A - B) \union (B - A) = (A \union B) - (A \intersect B)$.
+  
+  ($A \xor B$ is the set of all objects that are in $A$ or $B$ but \emph{not both}.)
+\end{Exercise}
+
+\begin{Answer}
+  \begin{structured_derivation}
+    \task{see above (I'm getting lazy)}
+    \observation{??}{$A \xor B \equiv \Set{x}{x \in A \xor x \in B}$}
+  \end{structured_derivation}
+\end{Answer}
+
+%unanswered
+%@next
+\begin{Exercise} [number=23] 
+  Let $X$ be a set with at least two elements. Then by Theorem \ref{THM:sets:RAT},
+  the relation $\subseteq$ on $\powerset(X)$ has the properties of reflexivity,
+  antisymmetry, and transitivity. The relation $\leq$ on $\reals$ also has these
+  properties. The relation $\leq$ on $\reals$ has the further property of 
+  \term{linearity}: for all $x, y \in \reals$, either $x \leq y$ or $y \leq x$.
+  Show that $\subseteq$ on $\powerset(X)$ lacks this property.
+\end{Exercise}
+
+%TODO review the example just before this problem
+%unanswered
+\begin{Exercise} [number=26]
+  Give a logical translation of $\cumulIntersect \mathcal{F} \subseteq
+  \cumulUnion \mathcal{G}$ using only the relation $\in$.
+\end{Exercise}
+
+%unanswered
+\begin{Exercise} [number=27]
+  Let $\mathcal{F}$ be a family of sets. Show that there is a set $A$ with the 
+  following properties:
+  \Question $\mathcal{F} \subseteq \powerset(A)$.
+  \Question For all sets $B$: if $\mathcal{F} \subseteq \powerset(B)$ then $A \subseteq B$.
+\end{Exercise}
+
+%unanswered
+\begin{Exercise} [number=29]
+  fill in and prove Theorem 4.20
+\end{Exercise}
+
+%unfinished: not transferred from notebook.
+%TODO: make the powersets cascadingly smaller
+\begin{Exercise} [number=30]
+Answer as many of the following questions as you can.
+\Question Determine: $\powerset(\emptyset)$, $\powerset(\powerset(\emptyset))$, $\powerset(\powerset(\powerset(\emptyset)))$
+\Question How many elements has $\powerset^{5}(\emptyset)$?
+\Question How many elements has $\powerset(A)$, given that $A$ as $n$ elements?
+\end{Exercise}
+
+%unfinished: need to LaTeX-ize and formalize/arrange argument from notebook.
+\begin{Exercise} [number=31]
+Check whether the following is true: if two sets have the same subsets, then they are equal. I.e.: if $\powerset(A) = \powerset(B)$, then $A = B$. Give a proof or a refutation by means of a counterexample.
+\end{Exercise}
+
+%unanswered
+\begin{Exercise} [number=32]
+Is it true that for all sets $A$ and $B$:
+\Question $\powerset(A \intersect B) = \powerset(A) \intersect \powerset(B)$?
+\Question $\powerset(A \union B) = \powerset(A) \union \powerset(B)$?
+\ExeText Provide either a proof or a refutation by counter-example.
+\end{Exercise}
+
+%unanswered
+\begin{Exercise} [number=33, difficulty=1]
+  Show:
+  \Question $B \intersect \bigl( \cumulUnion_{i \in I} A_i \bigr) =
+  \cumulUnion_{i \in I}(B \intersect A_i)$
+  
+  \Question $B \union \bigl( \cumulIntersect_{i \in I} A_i \bigr) = \cumulIntersect_{i
+    \in I}(B \union A_i)$
+  
+  \Question $\bigl(\cumulUnion_{i \in I} A_i \bigr)^c =
+  \cumulIntersect_{i \in I} A_{i}^{c}$, assuming that $\forall{i} \in
+  I \colon A_i \subseteq X$
+
+  \Question $\bigl(\cumulIntersect_{i \in I} A_i \bigr)^c =
+  \cumulUnion_{i \in I} A_{i}^{c}$, assuming that $\forall \in I
+  \colon A_i \subseteq X$
+\end{Exercise}
+
+%unanswered
+\begin{Exercise} [number=34, difficulty=1]
+  Assume that you are given a certain set $A_0$. Suppose you are
+  assigned the task of finding sets $A_1$, $A_2$, $A_3$, \dots, such
+  that $\powerset(A_1) \subseteq A_0$, $\powerset(A_2) \subseteq A_1$,
+  $\powerset(A_3) \subseteq A_2$, \dots Show that no matter how hard
+  you try, you will eventually fail, that is: hit a set $A_n$ for
+  which no $A_{n+1}$ exists such that $\powerset(A_{n+1}) \subseteq
+  A_n$. (I.e., $\emptyset \notin A_n$.)
+
+  \ExeText Suppose you can go on forever. Show this would entail
+  $\powerset\bigl(\cumulIntersect_{i \in \naturals} A_i \bigr)
+  \subseteq \cumulIntersect_{i \in \naturals} A_i$. Apply exercise 4.7.
+\end{Exercise}
+
+%unanswered
+\begin{Exercise} [number=35, difficulty=1]
+  Suppose that the collection $\mathcal{K}$ of sets satisfies the
+  following condition:
+  \begin{displaymath}
+    \forall{A} \in \mathcal{K} \colon A = \emptyset \lor \exists{B \in
+    \mathcal{K}} \suchthat A = \powerset(B)
+  \end{displaymath}
+  \ExeText Show that every element of $\mathcal{K}$ has the form
+  $\powerset^n(\emptyset)$ for some $n \in \naturals$. (N.B.:
+  $\powerset^0(\emptyset) = \emptyset$)
+\end{Exercise}
+
+%%% Local Variables:
+%%% TeX-master: "exercises_base"
+%%% End:
+\section{Ordered Pairs and Products}
+
+%unanswered
+\begin{Exercise} [number=39]
+fill out and prove the other items of Theorem 4.38
+\end{Exercise}
+
+%unanswered
+\begin{Exercise} [number=40]
+  \Question Assume that $A$ and $B$ are non-empty and that $A \times B = B \times A$. Show that $A = B$.
+  \Question Show by means of an example that the condition of non-emptiness in 1 (the previous part/Question) is necessary. (Did you use this in your proof of 1?)
+\end{Exercise}
+
+%unanswered
+\begin{Exercise} [number=41, difficulty=1]
+  To show that defining $(a,b)$ as $\bigl\{ \{a\}, \{a,b\} \bigr\}$ works, prove that:
+  \Question $\{a, b\} = \{a, c\} \quad \implies \quad b = c$.
+  \Question $\bigl\{ \{a\}, \{a, b\}\bigr\} = \bigl\{ \{x\}, \{x, y\} \bigr\} \qquad \implies \qquad a = x \land b = y$.
+\end{Exercise}
+\section{Lists and List Operations}
+
+%unanswered
+\begin{Exercise} [number=43]
+  How does it follow from this definition that lists of different length are unequal?
+\end{Exercise}
+
+%unanswered
+\begin{Exercise} [number=44]
+  Another ordering of lists is as follows: shorter lists come before
+  longer ones, and for lists of the same length we compare their first
+  elements, and if these are the same, the remainder lists. Give a
+  formal definition of this ordering. How would you implement it in Haskell?
+\end{Exercise}
+
+\begin{Exercise} [number=45]
+  Which operation on lists is specified by the Haskell definition in
+  the frame below?
+  \begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{5}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{18}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[5]{}\Varid{init}\mathbin{::}[\mskip1.5mu \Varid{a}\mskip1.5mu]\to [\mskip1.5mu \Varid{a}\mskip1.5mu]{}\<[E]%
+\\
+\>[5]{}\Varid{init}\;[\mskip1.5mu \Varid{x}\mskip1.5mu]{}\<[18]%
+\>[18]{}\mathrel{=}[\mskip1.5mu \mskip1.5mu]{}\<[E]%
+\\
+\>[5]{}\Varid{init}\;(\Varid{x}\mathbin{:}\Varid{xs}){}\<[18]%
+\>[18]{}\mathrel{=}\Varid{x}\mathbin{:}\Varid{init}\;\Varid{xs}{}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+\end{Exercise}
+
+\begin{Answer}
+  It's just like Clojure's/STk's \texttt{butlast} function.
+\end{Answer}
+
+\begin{Exercise} [number=46]
+  Write your own definition of a Haskell operation \text{\tt reverse} that
+  reverses a list.
+\end{Exercise}
+
+\begin{Answer}
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{3}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{10}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{13}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{26}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\Varid{reverse}\mathbin{::}[\mskip1.5mu \Varid{a}\mskip1.5mu]\to [\mskip1.5mu \Varid{a}\mskip1.5mu]{}\<[E]%
+\\
+\>[B]{}\Varid{reverse}\;[\mskip1.5mu \mskip1.5mu]{}\<[13]%
+\>[13]{}\mathrel{=}[\mskip1.5mu \mskip1.5mu]{}\<[E]%
+\\
+\>[B]{}\Varid{reverse}\;\Varid{l}{}\<[13]%
+\>[13]{}\mathrel{=}\Varid{squoosh}\;\Varid{l}\;[\mskip1.5mu \mskip1.5mu]{}\<[E]%
+\\
+\>[B]{}\hsindent{3}{}\<[3]%
+\>[3]{}\mathbf{where}\;{}\<[10]%
+\>[10]{}\Varid{squoosh}\;(\Varid{x}\mathbin{:}\Varid{xs})\;{}\<[26]%
+\>[26]{}\Varid{ans}\mathrel{=}\Varid{squoosh}\;\Varid{xs}\;(\Varid{x}\mathbin{:}\Varid{ans}){}\<[E]%
+\\
+\>[10]{}\Varid{squoosh}\;[\mskip1.5mu \mskip1.5mu]\;{}\<[26]%
+\>[26]{}\Varid{ans}\mathrel{=}\Varid{ans}{}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+\end{Answer}
+
+\begin{Exercise} [number=47]
+  Write a function \text{\tt splitList} that gives all the ways to split a list
+  of at least two elements in two non-empty parts. The type
+  declaration is:
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\Varid{splitList}\mathbin{::}[\mskip1.5mu \Varid{a}\mskip1.5mu]\to [\mskip1.5mu ([\mskip1.5mu \Varid{a}\mskip1.5mu],[\mskip1.5mu \Varid{a}\mskip1.5mu])\mskip1.5mu]{}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+  \ExeText the call \text{\tt splitList~\char91{}1\char46{}\char46{}4\char93{}} should give \text{\tt \char91{}\char40{}\char91{}1\char93{}\char44{}~\char91{}2\char44{}3\char44{}4\char93{}\char41{}\char44{}\char40{}\char91{}1\char44{}2\char93{}\char44{}\char91{}3\char44{}4\char93{}\char41{}\char44{}\char40{}\char91{}1\char44{}2\char44{}3\char93{}\char44{}\char91{}4\char93{}\char41{}\char93{}}.
+\end{Exercise}
+
+\begin{Answer}
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{3}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\Varid{splitList}\;\Varid{xs}\mathrel{=}[\mskip1.5mu \Varid{splitAt}\;\Varid{i}\;\Varid{xs}\mid \Varid{i}\leftarrow [\mskip1.5mu \mathrm{1}\mathinner{\ldotp\ldotp}\Varid{n}\mskip1.5mu]\mskip1.5mu]{}\<[E]%
+\\
+\>[B]{}\hsindent{3}{}\<[3]%
+\>[3]{}\mathbf{where}\;\Varid{n}\mathrel{=}(\Varid{length}\;\Varid{xs})\mathbin{-}\mathrm{1}{}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+\end{Answer}
+\section{List Comprehension and Database Query}
+
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{13}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{20}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{43}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\mathbf{import}\;\Conid{DB}\;(\Varid{db}){}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\Varid{characters}{}\<[13]%
+\>[13]{}\mathrel{=}\Varid{nub}\;{}\<[20]%
+\>[20]{}[\mskip1.5mu \Varid{x}\mid [\mskip1.5mu \text{\tt \char34 play\char34},\anonymous ,\anonymous ,\Varid{x}\mskip1.5mu]{}\<[43]%
+\>[43]{}\leftarrow \Varid{db}\mskip1.5mu]{}\<[E]%
+\\
+\>[B]{}\Varid{movies}{}\<[13]%
+\>[13]{}\mathrel{=}{}\<[20]%
+\>[20]{}[\mskip1.5mu \Varid{x}\mid [\mskip1.5mu \text{\tt \char34 release\char34},\Varid{x},\anonymous \mskip1.5mu]{}\<[43]%
+\>[43]{}\leftarrow \Varid{db}\mskip1.5mu]{}\<[E]%
+\\
+\>[B]{}\Varid{actors}{}\<[13]%
+\>[13]{}\mathrel{=}\Varid{nub}\;{}\<[20]%
+\>[20]{}[\mskip1.5mu \Varid{x}\mid [\mskip1.5mu \text{\tt \char34 play\char34},\Varid{x},\anonymous ,\anonymous \mskip1.5mu]{}\<[43]%
+\>[43]{}\leftarrow \Varid{db}\mskip1.5mu]{}\<[E]%
+\\
+\>[B]{}\Varid{directors}{}\<[13]%
+\>[13]{}\mathrel{=}\Varid{nub}\;{}\<[20]%
+\>[20]{}[\mskip1.5mu \Varid{x}\mid [\mskip1.5mu \text{\tt \char34 direct\char34},\Varid{x},\anonymous \mskip1.5mu]{}\<[43]%
+\>[43]{}\leftarrow \Varid{db}\mskip1.5mu]{}\<[E]%
+\\
+\>[B]{}\Varid{dates}{}\<[13]%
+\>[13]{}\mathrel{=}\Varid{nub}\;{}\<[20]%
+\>[20]{}[\mskip1.5mu \Varid{x}\mid [\mskip1.5mu \text{\tt \char34 release\char34},\anonymous ,\Varid{x}\mskip1.5mu]{}\<[43]%
+\>[43]{}\leftarrow \Varid{db}\mskip1.5mu]{}\<[E]%
+\\
+\>[B]{}\Varid{universe}{}\<[13]%
+\>[13]{}\mathrel{=}\Varid{nub}\;(\Varid{characters}\plus \Varid{actors}\plus \Varid{directors}\plus \Varid{movies}\plus \Varid{dates}){}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+
+Next, define lists of tuples, again by list comprehension:
+
+(I tried to name the variables mnemonically)
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{10}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{23}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{42}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\Varid{direct}{}\<[10]%
+\>[10]{}\mathrel{=}[\mskip1.5mu (\Varid{d},\Varid{m}){}\<[23]%
+\>[23]{}\mid [\mskip1.5mu \text{\tt \char34 direct\char34},\Varid{d},\Varid{m}\mskip1.5mu]{}\<[42]%
+\>[42]{}\leftarrow \Varid{db}\mskip1.5mu]{}\<[E]%
+\\
+\>[B]{}\Varid{act}{}\<[10]%
+\>[10]{}\mathrel{=}[\mskip1.5mu (\Varid{a},\Varid{m}){}\<[23]%
+\>[23]{}\mid [\mskip1.5mu \text{\tt \char34 play\char34},\Varid{a},\Varid{m},\anonymous \mskip1.5mu]{}\<[42]%
+\>[42]{}\leftarrow \Varid{db}\mskip1.5mu]{}\<[E]%
+\\
+\>[B]{}\Varid{play}{}\<[10]%
+\>[10]{}\mathrel{=}[\mskip1.5mu (\Varid{a},\Varid{m},\Varid{c}){}\<[23]%
+\>[23]{}\mid [\mskip1.5mu \text{\tt \char34 play\char34},\Varid{a},\Varid{m},\Varid{c}\mskip1.5mu]{}\<[42]%
+\>[42]{}\leftarrow \Varid{db}\mskip1.5mu]{}\<[E]%
+\\
+\>[B]{}\Varid{release}{}\<[10]%
+\>[10]{}\mathrel{=}[\mskip1.5mu (\Varid{m},\Varid{y}){}\<[23]%
+\>[23]{}\mid [\mskip1.5mu \text{\tt \char34 release\char34},\Varid{m},\Varid{y}\mskip1.5mu]{}\<[42]%
+\>[42]{}\leftarrow \Varid{db}\mskip1.5mu]{}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+
+Finally, define one placed, two placed and three placed predicates by
+means of lambda abstraction.
+
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{13}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\Varid{characterP}{}\<[13]%
+\>[13]{}\mathrel{=}\lambda \Varid{x}\to \Varid{x}\in \Varid{characters}{}\<[E]%
+\\
+\>[B]{}\Varid{actorP}{}\<[13]%
+\>[13]{}\mathrel{=}\lambda \Varid{x}\to \Varid{x}\in \Varid{actors}{}\<[E]%
+\\
+\>[B]{}\Varid{movieP}{}\<[13]%
+\>[13]{}\mathrel{=}\lambda \Varid{x}\to \Varid{x}\in \Varid{movies}{}\<[E]%
+\\
+\>[B]{}\Varid{directorP}{}\<[13]%
+\>[13]{}\mathrel{=}\lambda \Varid{x}\to \Varid{x}\in \Varid{directors}{}\<[E]%
+\\
+\>[B]{}\Varid{dateP}{}\<[13]%
+\>[13]{}\mathrel{=}\lambda \Varid{x}\to \Varid{x}\in \Varid{dates}{}\<[E]%
+\\
+\>[B]{}\Varid{actP}{}\<[13]%
+\>[13]{}\mathrel{=}\lambda (\Varid{x},\Varid{y})\to (\Varid{x},\Varid{y})\in \Varid{act}{}\<[E]%
+\\
+\>[B]{}\Varid{releaseP}{}\<[13]%
+\>[13]{}\mathrel{=}\lambda (\Varid{x},\Varid{y})\to (\Varid{x},\Varid{y})\in \Varid{release}{}\<[E]%
+\\
+\>[B]{}\Varid{directP}{}\<[13]%
+\>[13]{}\mathrel{=}\lambda (\Varid{x},\Varid{y})\to (\Varid{x},\Varid{y})\in \Varid{direct}{}\<[E]%
+\\
+\>[B]{}\Varid{playP}{}\<[13]%
+\>[13]{}\mathrel{=}\lambda (\Varid{x},\Varid{y},\Varid{z})\to (\Varid{x},\Varid{y},\Varid{z})\in \Varid{play}{}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+
+%unanswered
+\begin{ExerciseList}
+  Translate the following into queries:
+  \Exercise ``Give me the films in which Robert De Niro or Kevin
+  Spacey acted.''
+  \Exercise ``Give me all films with Quentin Tarantino as actor or
+  director that appeared in 1994.''
+  \Exercise ``Give me all films released after 1997 in which William
+  Hurt did \emph{not} act.'' (emphasis mine)
+\end{ExerciseList}
+\section{Using Lists to Represent Sets}
+
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{5}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{18}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\Varid{delete}\mathbin{::}\Conid{Eq}\;\Varid{a}\Rightarrow \Varid{a}\to [\mskip1.5mu \Varid{a}\mskip1.5mu]\to [\mskip1.5mu \Varid{a}\mskip1.5mu]{}\<[E]%
+\\
+\>[B]{}\Varid{delete}\;\Varid{x}\;[\mskip1.5mu \mskip1.5mu]{}\<[18]%
+\>[18]{}\mathrel{=}[\mskip1.5mu \mskip1.5mu]{}\<[E]%
+\\
+\>[B]{}\Varid{delete}\;\Varid{x}\;(\Varid{y}\mathbin{:}\Varid{ys}){}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\mid \Varid{x}\equiv \Varid{y}{}\<[18]%
+\>[18]{}\mathrel{=}\Varid{ys}{}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\mid \Varid{otherwise}{}\<[18]%
+\>[18]{}\mathrel{=}\Varid{y}\mathbin{:}\Varid{delete}\;\Varid{x}\;\Varid{ys}{}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{5}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{9}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{18}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{19}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{26}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\Varid{elem}\mathbin{::}\Conid{Eq}\;\Varid{a}\Rightarrow \Varid{a}\to [\mskip1.5mu \Varid{a}\mskip1.5mu]\to \Conid{Bool}{}\<[E]%
+\\
+\>[B]{}\Varid{x}\in [\mskip1.5mu \mskip1.5mu]{}\<[18]%
+\>[18]{}\mathrel{=}\Conid{False}{}\<[E]%
+\\
+\>[B]{}\Varid{x}\in (\Varid{y}\mathbin{:}\Varid{ys}){}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\mid \Varid{x}\equiv \Varid{y}{}\<[18]%
+\>[18]{}\mathrel{=}\Conid{True}{}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\mid \Varid{otherwise}{}\<[18]%
+\>[18]{}\mathrel{=}\Varid{elem}\;\Varid{x}\;\Varid{ys}{}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\Varid{union}\mathbin{::}\Conid{Eq}\;\Varid{a}\Rightarrow [\mskip1.5mu \Varid{a}\mskip1.5mu]\to [\mskip1.5mu \Varid{a}\mskip1.5mu]\to [\mskip1.5mu \Varid{a}\mskip1.5mu]{}\<[E]%
+\\
+\>[B]{}[\mskip1.5mu \mskip1.5mu]{}\<[9]%
+\>[9]{}\mathbin{`\Varid{union}`}\Varid{ys}\mathrel{=}\Varid{ys}{}\<[E]%
+\\
+\>[B]{}(\Varid{x}\mathbin{:}\Varid{xs}){}\<[9]%
+\>[9]{}\mathbin{`\Varid{union}`}\Varid{ys}\mathrel{=}\Varid{x}\mathbin{:}\Varid{xs}\mathbin{`\Varid{union}`}(\Varid{delete}\;\Varid{x}\;\Varid{ys}){}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\Varid{intersect}\mathbin{::}\Conid{Eq}\;\Varid{a}\Rightarrow [\mskip1.5mu \Varid{a}\mskip1.5mu]\to [\mskip1.5mu \Varid{a}\mskip1.5mu]\to [\mskip1.5mu \Varid{a}\mskip1.5mu]{}\<[E]%
+\\
+\>[B]{}\Varid{intersect}\;[\mskip1.5mu \mskip1.5mu]\;\Varid{s}{}\<[19]%
+\>[19]{}\mathrel{=}[\mskip1.5mu \mskip1.5mu]{}\<[E]%
+\\
+\>[B]{}\Varid{intersect}\;(\Varid{x}\mathbin{:}\Varid{xs})\;\Varid{s}{}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\mid \Varid{x}\in \Varid{s}{}\<[19]%
+\>[19]{}\mathrel{=}\Varid{x}\mathbin{:}{}\<[26]%
+\>[26]{}\Varid{xs}\mathbin{`\Varid{intersect}`}\Varid{s}{}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\mid \Varid{otherwise}{}\<[19]%
+\>[19]{}\mathrel{=}{}\<[26]%
+\>[26]{}\Varid{xs}\mathbin{`\Varid{intersect}`}\Varid{s}{}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+
+%unanswered
+\begin{Exercise} [number=51]
+  The Haskell operation for list difference is defined as \ensuremath{\mathbin{\char92 \char92 }} in
+  \texttt{List.hs}. Write your own version of this.
+\end{Exercise}
+
+%unanswered
+\begin{Exercise} [number=53]
+  Write functions \ensuremath{\Varid{genUnion}} and \ensuremath{\Varid{genIntersect}} for generalized list
+  union and list intersection. The functions should be of type
+  \ensuremath{[\mskip1.5mu [\mskip1.5mu \Varid{a}\mskip1.5mu]\mskip1.5mu]\to [\mskip1.5mu \Varid{a}\mskip1.5mu]}. They take a list of lists as input and produce a
+  list as output.
+
+  Note that \ensuremath{\Varid{genIntersect}} is undefined on the empty
+  list of lists (compare the remark about the presuposition of
+  generalized intersection on page ONE HUNDRED THIRTY-FOUR).
+\end{Exercise}
+\section{A Data Type for Sets}
+
+%unanswered
+\begin{Exercise} [number=54]
+  Give implementations of the operations % @TODO inline list
+\end{Exercise}
+
+%unanswered
+\begin{Exercise} [number=55]
+  In an implementation of sets as lists without duplicates, the
+  implementation of \ensuremath{\Varid{insertSet}} has to be changed. How?
+\end{Exercise}
+
+%unanswered
+\begin{Exercise} [number=56]
+  What would have to change in the module \texttt{SetEq.hs} to get a
+  representation of the empty set as $0$?
+\end{Exercise}
+
+%unanswered
+\begin{Exercise} [number=57,difficulty=1]
+  \Question How many pairs of curly braces $\lbrace \rbrace$ occur in
+  the expanded notation for $\powerset^5(\emptyset)$, in the
+  representation where $\emptyset$ appears as $\{\}$?
+
+  \Question How many copies of $0$ occur in the expanded notation for
+  $\powerset^5(\emptyset)$, in the representation where $\emptyset$
+  appears as 0?
+  % @TODO \ref{...} Exercise #56
+
+  \Question
+  How many pairs of curly braces occur in the expanded notation for
+  $\powerset^5(\emptyset)$, in the representation where $\emptyset$
+  appears as 0?
+\end{Exercise}
+
+
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "exercises_base"
+%%% End: 
+
+\chapter{Relations}
+\section{The Notion of a Relation}
+
+\begin{Exercise} [number=13]
+  Show that $\forall{x,y} \colon \exists{R} \suchThat xRy$. (``Between
+  every two things there exist some relation''.)
+\end{Exercise}
+
+\begin{Answer}
+  Well, suppose we have some arbitrary $x$ and $y$---well, there's
+  nothing stopping us from creating an ordered pair $(x,y)$. Now
+  observe that $\{(x,y)\}$ is a valid set. Thus, there is at least one
+  set that contains an ordered pair comprising $x$ and $y$ as
+  parts. Finally, note that $\{(x,y)\}$ satisfies the description of a
+  relation. It's a set of ordered pairs. (The set's being a \term{singleton}
+  is irrelevant in this circumstance.)
+\end{Answer}
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "exercises_base"
+%%% End: 
+\section{Properties of Relations}
+
+\newcommand{\R}{\mathrel{R}}
+
+%unanswered
+\begin{Exercise} [number=17]
+  Show that a relation $R$ on $A$ is irreflexive iff $\Delta_A
+  \intersect R = \emptyset$.
+\end{Exercise}
+
+\begin{Answer}
+  \begin{structured_derivation}
+    \task{Show that $\Delta_A \intersect R = \emptyset \iff R \textrm{
+        is irreflexive}$ when:}
+    \assumption{$R \subseteq A^2$}
+    \isProvedBy{Derive each side of the equivalence and prove the
+      other to prove the equivalence itself.}
+    \begin{nested_derivation}
+      \task{Show that $\Delta_A \intersect R = \emptyset$ when:}
+      \assumption{$R$ is irreflexive}
+      \observation{simple substitution based on definition of
+        \term{irreflexive}}{$\forall{x \in A} \colon \neg(x \mathbin{R} x)$}
+      \observation{reformulation, again based on
+        definition}{$\nexists{x \in A} \suchThat (x,x) \in R$}
+      
+      
+    \end{nested_derivation}
+
+    \begin{nested_derivation}
+      \task{Show that $R$ is irreflexive when:}
+      \assumption{$\Delta_A \intersect R = \emptyset$}
+      \observation{??}{
+        \begin{nested_derivation}
+          \task{$\Delta_A \intersect R = \emptyset$}
+          \justification[\equiv]{Substitute by definition}
+          \dijk{$\Set{(x,x)}{x \in A} \intersect R = \emptyset$}
+          \justification[\equiv]{??}          
+        \end{nested_derivation}
+}
+    \end{nested_derivation}
+  \end{structured_derivation}
+\end{Answer}
+
+%unanswered
+\begin{Exercise} [number=19]
+  Show the following:
+  \Question A relation $R$ on a set $A$ is symmetric iff $\forall{x,y
+    \in A} \colon xRy \iff yRx$.
+  \Question A relation $R$ is symmetric iff $R \subseteq R^{-1}$, iff
+  $R = R^{-1}$.
+\end{Exercise}
+
+%unanswered
+\begin{Exercise} [number=20]
+  Show that every asymmetric relation is irreflexive.
+\end{Exercise}
+
+%unanswered
+\begin{Exercise} [number=22]
+  Show from the definitions that an asymmetric relation always is
+  antisymmetric.
+\end{Exercise}
+
+%unanswered
+\begin{Exercise} [number=23]
+  Show that a relation $R$ on a set $A$ is transitive
+  iff \[\forall{x,z \in A} \colon \left( \exists{y \in A} \suchThat
+    a \R y \land y \R z \right) \implies x \R z\].
+\end{Exercise}
+
+%unanswered
+\begin{Exercise} [number=28]
+  Show that every strict partial order is asymmetric.
+\end{Exercise}
+
+%unanswered
+\begin{Exercise} [number=29]
+  Show that every relation which is transitive and asymmetric is a
+  strict partial order.
+\end{Exercise}
+
+%unanswered
+\begin{Exercise} [number=30]
+  Show that if $R$ is a strict partial order on $A$, then $R \union
+  \Delta_A$ is a partial order on $A$. (So every strict partial order
+  is contained in a partial order.)
+\end{Exercise}
+
+%unanswered
+\begin{Exercise} [number=31]
+  Show that the inverse of a partial order is again a partial order.
+\end{Exercise}
+
+%unanswered
+\begin{Exercise} [number=32]
+  
+  Let $S$ be a reflexive and symmetric relation on a set $A$.
+
+  A path is a finite sequence $a_1, \dots, a_n$ of elements of $A$
+  such that for every $i$, $1 \le i < n$, we have that
+  $a_{i}\mathrel{S}a_{a+1}$. Such a path connects $a_1$ with $a_n$.
+  
+  Assume that for all $a$, $b \in A$ there is exactly one path
+  connecting $a$ with $b$.
+
+  Fix $r \in A$. Define the relation $\le$ on $A$ by: $a \le b$ iff
+  $a$ is one of the elements in the path connecting $r$ with $b$.
+
+  Show the following:
+  \Question $\le$ is reflexive
+  \Question $\le$ is antisymmetric
+  \Question $\le$ is transitive
+  \Question for all $a \in A$, $r \le a$
+  \Question for every $a \in A$, the set $X_a = \Set{x \in A}{x \le
+    a}$ is finite and if $b,c \in X_a$ then $b \le c$ or $c \le b$.
+
+  (A structure $(A,\le,r)$ with these five properties is called a
+  tree with root $r$. The directory-structure of a computer account is
+  an example of a tree. Another example is the structure tree of a
+  formula (see Section 2.3 above). These are example of finite trees,
+  but if $A$ is infinite, then the tree $(A,\le,r)$ will have at
+  least one infinite branch.)
+\end{Exercise}
+
+%unanswered
+\begin{Exercise} [number=33]
+  Consider the following relations on the natural numbers. Check their
+  properties (some answers can be found in the text above). The
+  \term{successor} relation is the relation given by
+  $\Set{(n,m)}{n+1=m}$. The divisor relation is $\Set{(n,m)}{n
+    \textrm{ divides } m}$. The \term{coprime} relation $C$ on
+  $\naturals$ is given by $nCm :\equiv \operatorname{GCD}(n,m) = 1$,
+  i.e., the only factor of $n$ that divides $m$ is 1, and vice versa.
+
+  \dots (table) \dots
+\end{Exercise}
+
+%unanswered
+\begin{Exercise} [number=35]
+  Suppose that $R$ is a relation on $A$.
+  \Question Show that $R \union \Delta_A$ is the reflexive closure of
+  $R$.
+  \Question Show that $R \union R^{-1}$ is the symmetric closure of $R$.
+\end{Exercise}
+
+%unanswered
+\begin{Exercise} [number=36]
+  Let $R$ be a transitive binary relation on $A$. Does it follow from
+  the transitivity of $R$ that its symmetric reflexive closure $R
+  \union R^{-1} \union \Delta_A$ is also transitive? Give a proof if
+  your answer is yes, a counterexample otherwise.
+\end{Exercise}
+
+%unanswered
+\begin{Exercise} [number=38]
+  Determine the composition of the relation ``father of'' with
+  itself. Determine the composition of the relations ``brother of''
+  and ``parent of'' Give an example showing that $R \comp S = S \comp
+  R$ can be false.
+\end{Exercise}
+
+%unanswered
+\begin{Exercise} [number=39]
+  Consider the relation \[R =
+  \{(0,2),(0,3),(1,0),(1,3),(2,0),(2,3)\}\] on the set $A =
+  \{0,1,2,3,4\}$.
+  \Question Determine $R^2, R^3$ and $R^4$.
+  \Question Give a relation $S$ on $A$ such that $R \union (S \comp R)
+  = S$.
+\end{Exercise}
+
+%unanswered
+\begin{Exercise} [number=40]
+  Verify:
+  \Question A relation $R$ on $A$ is transitive iff $R \comp R
+  \subseteq R$.
+  \Question Give an example of a transitive relation $R$ for which $R
+  \comp R = R$ is false.
+\end{Exercise}
+
+
+%unanswered
+\begin{Exercise} [number=41]
+  Verify:
+  \Question $Q \comp (R \comp S) = (Q \comp R) \comp S$. (Thus, the
+  notation $Q \comp R \comp S$ is unambiguous.)
+  \Question $(R \comp S)^{-1} = S^{-1} \comp R^{-1}$.
+\end{Exercise}
+
+
+%unanswered
+\begin{Exercise} [number=45]
+  Show that the relation $<$ on $\naturals$ is the transitive closure
+  of the relation $R = \Set{(n,n+1)}{n \in \naturals}$.
+\end{Exercise}
+
+%unanswered
+\begin{Exercise} [number=46]
+  Let $R$ be a relation on $A$. Show that $R^+ \union \Delta_A$ is the
+  reflexive transitive closure of $R$.
+\end{Exercise}
+
+%unanswered
+\begin{Exercise} [number=47]
+  Give the reflexive transitive closure of the following relation: \[R
+  = \Set{(n,n+1)}{n \in \naturals}\].
+\end{Exercise}
+
+%unanswered
+\begin{Exercise} [number=48,difficulty=1]
+  \Question Show that an intersection of \emph{arbitrarily many} transitive
+  relations is transitive.
+  \Question Suppose that $R$ is a relation on $A$. Note that $A^2$ is
+  one example of a transitive relation on $A$ that extends
+  $R$. Conclude that the intersection of \emph{all} transitive relations
+  extending $R$ is the \emph{least} transative relation extending $R$. In
+  other words, $R^+$ equals the intersection of \emph{all} transitive
+  relations extending $R$.
+\end{Exercise}
+
+%unanswered
+\begin{Exercise} [difficulty=1,number=49]
+  \Question Show that $(R^*)^{-1} = (R^{-1})^*$.
+  \Question Show by means of a counter-example that $(R \union
+  R^{-1})^* = R^* \union R^{-1*}$ may be false.
+  \Question Prove: if $S \comp R \subseteq R \comp S$, then $(R \comp
+  S)^* \subseteq R^* \comp S^*$.
+\end{Exercise}
+
+%unanswered
+\begin{Exercise} [number=50]
+  Suppose that $R$ and $S$ are reflexive relations on the set
+  $A$. Then $\Delta_A \subseteq R$ and $\Delta_A \subseteq S$, so
+  $\Delta_A \subseteq R \intersect S$, i.e., $R \intersect S$ is
+  reflexive as well. We say: reflexivity is preserved under
+  intersection. Similarly, if $R$ and $S$ are reflexive, then
+  $\Delta_A \subseteq R \union S$, so $R \union S$ is
+  reflexive. Reflexivity is preserved under union. If $R$ is
+  reflexive, then $\Delta_A \subseteq R^{-1}$, so $R^{-1}$ is
+  reflexive. Reflexivity is preserved under inverse. If $R$ and $S$
+  are reflexive, $\Delta_A \subseteq R \comp S$, so $R \comp S$ is
+  reflexive. Reflexivity is preserved under composition. Finally, if
+  $R$ on $A$ is reflexive, then the complement of $R$, i.e., the
+  relation $A^2 \setminus R$, is irreflexive. So reflexivity is not
+  preserved under complement. These closure properties of reflexive
+  relations are listed in the table below.
+
+  We can ask the same questions for other relational
+  properties. Suppose $R$ and $S$ are symmetric relations on $A$. Does
+  it follow that $R \intersect S$ is symmetric? That $R \union S$ is
+  symmetric? That $R^{-1}$ is symmetric? That $A^2 \setminus R$ is
+  symmetric? That $R \comp S$ is symmetric? Similarly for the property
+  of transitivity. These questions are summarized in the table
+  below. Complete the table by putting `yes' or `no' in the
+  appropriate places.
+
+  \dots (table) \dots
+\end{Exercise}
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "exercises_base"
+%%% End: 
+
+\end{document}

@@ -1,0 +1,75 @@
+\begin{Exercise} [number=66]
+  Show that for ever $n \in \intgers$ with $n \neg 0$ it holds that
+  $\equiv_n$ is an equivalence on $\integers$.
+\end{Exercise}
+
+Here is a Haskell implementation of the modulo relation:
+\begin{code}
+
+module SampleRelations
+
+modulo :: Integer -> Integer -> Integer -> Bool
+modulo n = \ x y -> n `divides` (x-y)
+\end{code}
+
+The relation that applies to two finite sets in case they have the
+same number of elements is an equivalence on the collection of all
+finite sets.
+
+The corresponding equivalence on finite lists is given by the
+following piece of Haskell code:
+\begin{code}
+equalSize :: [a] -> [b] -> Bool
+equalSize list1 list2 = (length list1) == (length list2)
+\end{code}
+
+\begin{Exercise} [number=69]
+  Determine whether the following relations on $\naturals$ are \dots % @TODO inline list
+  \Question $\lbrack (2;3), (3;5), (5;2) \rbrack$
+  \Question $\bigl{\lbrace} (n;\!m) \suchThat \abs{n - m} \geq 3 \bigr{\rbrace}$
+\end{Exercise}
+
+\begin{Exercise} [number=70]
+  $A = \{ 1, 2, 3 \}$. Can you guess how many relations there are on
+  this small set? Indeed, there must be sufficiently many to provide
+  for the following questions.
+  \Question Give an example of a relation on $A$ that is reflexive,
+  but not symmetric and not transitive.
+  \Question Give an example of a relation on $A$ that is symmetric,
+  but not reflexive and not transitive.
+  \Question Give examples (if any) of relations on $A$ that satisfy
+  each of the six remaining possibilities \wrt reflexivity, symmetry
+  and transitivity.
+\end{Exercise}
+
+\begin{Exercise} [number=71]
+  For finite sets $A$ (0, 1, 2, 3, 4, and 5 elements and $n$ elements
+  generally) the following table has entries for: the number of
+  elements in $A^2$, the number of elements in $\powerset(A^2)$ (that
+  is: the number of relations on $A$), the number of relations on $A$
+  that are %@TODO inline list
+  , and the number of equivalences on A.
+  % @TODO fill in table
+  Give all reflexive, symmetric, transitive relations and equivalences
+  for the cases that $A = \emptyset$ (0 elements) and $A = \{0\}$ (1
+  element). SHow there are exactly 13 transitive relations on
+  $\{0,1\}$, and give the 3 that are not transitive. Put numbers on
+  the places with question marks. (You are not requested to fill in
+  the ~---)
+\end{Exercise}
+
+\begin{Exercise} [number=73]
+  Suppose that $R$ is a symmetric and transitive relation on the set
+  % @TODO prevent the line break on the math below.
+  $A$ such that $\forall{x \in A} \colon \exists{y \in A} \suchThat
+  x\mathrel{R}y$. Show that $R$ is reflexive on $A$.
+\end{Exercise}
+
+\begin{Exercise} [number=74]
+  Let $R$ be a relation on $A$. Show that $R$ is an equivalence iff
+  \dots % @TODO inline
+\end{Exercise}
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "exercises_base"
+%%% End: 

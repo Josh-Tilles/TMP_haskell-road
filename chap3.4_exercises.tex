@@ -1,0 +1,29 @@
+\section{Rules for the Quantifiers}
+
+\begin{Exercise}[number=18]
+  Show, using $\forall$-introduction and Deduction Rule: if from $\Gamma$, $P(c)$ it follows that $Q(c)$ (where $c$ satisfies $P$, but is otherwise ``arbitrary''), then from $\Gamma$ it follows that $\forall{x} \colon P(x) \implies Q(x)$.
+\end{Exercise}
+
+\begin{Answer} [number=18]
+  \begin{structured_derivation}
+    \task{Prove $\Gamma \implies \bigl( \forall{x} \colon P(x) \implies Q(x) \bigr)$ provided that:}
+    \assumption{$\bigl( P(c) \land \Gamma \bigr) \implies Q(c)$}
+    \isProvedBy{deduction rule; suppose $\Gamma$ (because it's the antecedent)}
+    \begin{nested_derivation}
+      \task{Prove $\forall{x} \colon P(x) \implies Q(x)$ when:}
+      \assumption{$\Gamma$}
+      \isProvedBy{deduction rule}
+      \begin{nested_derivation}
+        \task{Prove $Q(x)$ when:}
+        \assumption{$\exists{x} \suchthat P(x)$}
+        \observation
+          {A conjunction follows from its two conjuncts taken together.}
+          { $\Gamma \land P(x)$ }
+        \observation
+          {\term{modus ponens}}
+          { $Q(x)$ }
+      \end{nested_derivation}
+      \andbutso{$\forall{x} \colon P(x) \implies Q(x)$}
+    \end{nested_derivation}
+  \end{structured_derivation}
+\end{Answer}
