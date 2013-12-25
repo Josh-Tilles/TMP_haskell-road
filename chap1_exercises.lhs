@@ -1,4 +1,4 @@
-We use LD(n) for the least natural number greater than 1 that divides n.
+igWe use LD(n) for the least natural number greater than 1 that divides n.
 
 \begin{code}
     divides d n =
@@ -59,7 +59,7 @@ maxIn (x:xs)  = max x (maxIn xs)
 \end{Answer}
 
 \begin{Exercise} [number=10]
-  Define a function @removeFst@ that removes the first occurrence of an integer $m$ from a lst of integers. if |m| does not occur n the list, the list remains unchanged.
+  Define a function @removeFst@ that removes the first occurrence of an integer $m$ from a list of integers. if |m| does not occur n the list, the list remains unchanged.
 \end{Exercise}
 
 \begin{Answer}
