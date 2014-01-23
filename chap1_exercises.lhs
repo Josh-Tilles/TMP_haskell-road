@@ -105,6 +105,12 @@ Check out the slight difference (the readability in particular) in the following
 blowup chrs = concat (zipWith replicate [1..] chrs)
 \end{spec}
 
+Also, consider a previous iteration of the solution:
+%\begin{spec}
+%blowup = concat . map (\(n,c) -> replicate n c) . zip [1..]
+%\end{spec}
+% commented out because otherwise it breaks highlighting.
+
 \end{Answer}
 
 
